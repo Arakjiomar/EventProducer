@@ -77,4 +77,6 @@ echo "Copying LHE file to ${OUTFILE}"
 mkdir -p ${OUTDIR}
 
 source /cvmfs/sft.cern.ch/lcg/views/LCG_96/x86_64-centos7-gcc8-opt/setup.sh
-xrdcp -N -v DUMMYPROCESS/Events/run_01/unweighted_events.lhe.gz root://eospublic.cern.ch/${OUTDIR}/events_${JOBID}.lhe.gz
+echo `eos vid ls`
+echo `eos whoami`
+cp DUMMYPROCESS/Events/run_01/unweighted_events.lhe.gz ${OUTDIR}/events_${JOBID}.lhe.gz
