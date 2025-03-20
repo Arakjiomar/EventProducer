@@ -5,7 +5,7 @@ eostest = '/eos/experiment/fcc/hh/tests/testfile.lhe.gz'
 eostest_size = 1312594
 
 # stat
-lhe_stat = "/eos/experiment/fcc/www/data/FCChh/statlhe.html"
+lhe_stat = "/eos/home-y/yangc/FCC/statlhe.html"
 delphes_stat = "/eos/experiment/fcc/www/data/FCChh/statdelphesVERSION.html"
 
 # web
@@ -45,7 +45,7 @@ prodTag = {
 defaultstack='/cvmfs/fcc.cern.ch/sw/latest/setup.sh'
 
 ##eos directory for FCCSW pythia delphes files
-delphes_dir = '/eos/experiment/fcc/hh/generation/DelphesEvents/'
+delphes_dir = '/eos/home-y/yangc/FCC/DelphesEvents/'
 ##extension
 delphes_ext='.root'
 ##name of the ttree
