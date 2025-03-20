@@ -13,7 +13,7 @@ lhe_web = "/eos/experiment/fcc/www/data/FCChh/LHEevents.txt"
 delphes_web = "/eos/experiment/fcc/www/data/FCChh/Delphesevents_VERSION.txt"
 
 # yaml directory
-yamldir = '/afs/cern.ch/work/f/fccsw/public/FCCDicts/yaml/FCChh/'
+yamldir = '/eos/home-y/yangc/FCC/mg5events/'
 
 # proc lists
 procList = [
@@ -24,7 +24,7 @@ procList = [
 ##eos directory for MG5@MCatNLO gridpacks
 gp_dir      = '/eos/experiment/fcc/hh/generation/gridpacks/'
 ##eos directory for lhe files
-lhe_dir     = '/eos/experiment/fcc/hh/generation/lhe/'
+lhe_dir     = '/eos/home-y/yangc/FCC/mg5events/'
 ##extension
 lhe_ext     ='.lhe.gz'
 
@@ -1490,7 +1490,11 @@ gridpacklist = {
 'mg_pp_vbf_hh_C2V100_CV100_lambda200':['pp VBF HH angelas gridpack','','','1.0','1.0','1.0'], #TESTER 
 'mg_pp_vbf_hh_C2V200_CV100_lambda100':['pp VBF HH angelas gridpack','','','1.0','1.0','1.0'], #TESTER 
 
+# ttH(yy) @ 50 TeV
+'mg_pp_ttH_yy_50TeV':['ttH(yy) 50 TeV events','1','1','1','1','1'], #TESTER
+
 }
+
 
 
 ##Gridpack list for MG5@MC@NLO
