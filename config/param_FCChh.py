@@ -6,11 +6,11 @@ eostest_size = 1312594
 
 # stat
 lhe_stat = "/eos/home-y/yangc/FCC/statlhe.html"
-delphes_stat = "/eos/experiment/fcc/www/data/FCChh/statdelphesVERSION.html"
+delphes_stat = "/eos/home-y/yangc/FCC/statdelphesVERSION.html"
 
 # web
 lhe_web = "/eos/experiment/fcc/www/data/FCChh/LHEevents.txt"
-delphes_web = "/eos/experiment/fcc/www/data/FCChh/Delphesevents_VERSION_DETECTOR.txt"
+delphes_web = "/eos/home-y/yangc/FCC/Delphesevents_VERSION_DETECTOR.txt"
 
 # yaml directory
 yamldir = '/eos/home-y/yangc/FCC/mg5events/'
@@ -19,7 +19,7 @@ yamldir = '/eos/home-y/yangc/FCC/mg5events/'
 procList = [
      # '/afs/cern.ch/work/f/fccsw/public/FCCDicts/FCChh_procDict_VERSION.json',
      # '/afs/cern.ch/work/f/fccsw/public/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
-     '/eos/experiment/fcc/www/data/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
+     '/eos/home-y/yangc/FCC/FCChh_procDict_VERSION_DETECTOR.json',
      # '/eos/experiment/fcc/hh/utils/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
 ]
 
@@ -824,7 +824,7 @@ gridpacklist = {
 'mg_pp_vbf_h01j_5f_100TeV':['TESTER - vbf higgs + 0/1 jets',' @ 100 TeV, inclusive','xqcut = 40, qCut = 60','84.06','4.3', '1.0'],
 'mg_pp_vbf_h01j_5f_120TeV':['vbf higgs + 0/1 jets',' @ 120 TeV, inclusive','xqcut = 40, qCut = 60','105.45','4.3', '1.0'],
 
-'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','12.16','1.22','1.0'],
+'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','12.16','1.22','0.105'],
 'mg_pp_tth01j_5f_60TeV':['higgs associated with top pair + 0/1 jets','@ 60 TeV, inclusive','xqcut = 80, qCut = 120','17.38','1.22','1.0'],
 'mg_pp_tth01j_5f_72TeV':['higgs associated with top pair + 0/1 jets','@ 72 TeV, inclusive','xqcut = 80, qCut = 120','24.60','1.22','1.0'],
 'mg_pp_tth01j_5f_80TeV':['higgs associated with top pair + 0/1 jets','@ 80 TeV, inclusive','xqcut = 80, qCut = 120','29.90','1.22','1.0'],
