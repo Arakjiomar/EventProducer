@@ -55,39 +55,12 @@ Example for LHE:
 python bin/run.py --FCChh --LHE --merge -p mg_pp_tth01j_5f_50TeV [--force]
 ```
 
-0) To clean jobs that are flagged as bad, the following command can be used for LHE:
+4) To clean jobs that are flagged as bad, the following command can be used for LHE:
 ```
 python bin/run.py --FCChh --LHE --clean --process mg_pp_tth01j_5f_50TeV
 ```
 
-
-Cleaning bad jobs
-=================
-To clean jobs that are flagged as bad, the following command can be used for LHE:
 ```
-python bin/run.py --FCChh --LHE --clean [--process process]
-```
-
-
-Example for Delphes events:
-```
-python bin/run.py --FCChh --reco --checkeos --prodtag fcc_v04 [--process process] [--force]
-```
-This is not needed yet
-Example for Delphes events:
-```
-python bin/run.py --FCChh --reco --check --prodtag fcc_v04 [--process process] [--force]
-```
-Example for Delphes events:
-```
-python bin/run.py --FCChh --reco --merge --prodtag fcc_v04 [--process process] [--force]
-```
-and for Delphes
-```
-python bin/run.py --FCChh --reco --clean --prodtag spring2021 [--process process]
-```
-
-
 As the code checks the files that are in the end written on eos, we need to clean also old jobs that don't produced outputs 3 days after they started.
 To do so run the following command for LHE
 ```
@@ -109,6 +82,7 @@ and for Delphes
 ```
 python bin/run.py --FCChh --reco --remove --process process --prodtag spring2021
 ```
+```
 
 ## Generate FCCSW files from the LHE and decay with Pyhtia8
 ========================================================
@@ -125,7 +99,7 @@ For FCC-ee this directory is
 1. Run jobs:
 We need centos7 container to run it
 ```
-python bin/run.py --FCChh --reco --send --type lhep8 --condor -p mg_pp_tth01j_5f_50TeV -N 10 -q espresso --prodtag fcc_v07 --detector II --pycard p8_pp_tth01j_5f.cmd
+python bin/run.py --FCChh --reco --send --type lhep8 --condor -p mg_pp_tth01j_5f_50TeV -N 10 -q workday --prodtag fcc_v07 --detector II --pycard p8_pp_tth01j_5f.cmd
 ```
 - NUmber of jobs here should be the same as previous LHE jobs
 - Here we use the detector card of up-to-date CDR version `FCC v07 II`
@@ -140,4 +114,46 @@ Place where we store samples /eos/home-y/yangc/FCC/DelphesEvents/fcc_v07/II//mgp
 1. What is the difference between haaexcl and haa?
 2. What jet matching parameter should we use
 3. What cuts should we apply at the production of LHE files
+
+
+Example for Delphes events:
+```
+python bin/run.py --FCChh --reco --checkeos --prodtag fcc_v07 --process mg_pp_tth01j_5f_50TeV --detector II
+python bin/run.py --FCChh --reco --check --prodtag fcc_v07 --process mg_pp_tth01j_5f_50TeV  --detector II
+python bin/run.py --FCChh --reco --merge --prodtag fcc_v07 --process mg_pp_tth01j_5f_50TeV --detector II
+python bin/run.py --FCChh --reco --clean --prodtag fcc_v07 --process mgp8_pp_tth01j_5f_50TeV --detector II
+```
+
+To create the list of samples to be used in physics analyses
+```
+python bin/run.py --FCChh --reco --sample --prodtag fcc_v07 --detector II
+```
+
+```bash
+[yangc@lxplus961 EventProducer]$ python bin/run.py --FCChh --reco --sample --prodtag fcc_v07 --detector II
+INFO: Importing base FCC-hh config...
+INFO: Running version: fcc_v07
+INFO: Operating on Reco samples:
+        - version: fcc_v07
+        - detector: II
+INFO: Generating procDict JSON...
+
+------ process:  mgp8_pp_tth01j_5f_50TeV -------------
+
+self.para.gridpacklist[processhad][3]: 12.16
+self.para.gridpacklist[processhad][4]: 1.22
+INFO: LHE yaml: /eos/home-y/yangc/FCC/mg5events/lhe/mg_pp_tth01j_5f_50TeV/merge.yaml
+INFO: Reco. yaml: /eos/home-y/yangc/FCC/mg5events/fcc_v07/II/mgp8_pp_tth01j_5f_50TeV/merge.yaml
+N: 106465, Nw:1294743.6928806305, xsec: 12.16 , kf: 1.22 pb, eff: 0.105
+'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','12.16','1.22','1.0']
+'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','12.16','1.22','0.105']
+INFO: Saving procDict JSON into:
+  - /eos/home-y/yangc/FCC/FCChh_procDict_fcc_v07_II.json
+827c827
+< 'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','12.16','1.22','0.105'],
+---
+> 'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','12.16','1.22','1.0'],
+```
+
+Now we have the samples of signal. We can migrate this procedure of generation to background process, then move on to analyze the root files.
 
