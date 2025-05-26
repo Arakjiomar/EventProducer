@@ -5,28 +5,28 @@ eostest = '/eos/experiment/fcc/hh/tests/testfile.lhe.gz'
 eostest_size = 1312594
 
 # stat
-lhe_stat = "/eos/experiment/fcc/www/data/FCChh/statlhe.html"
-delphes_stat = "/eos/experiment/fcc/www/data/FCChh/statdelphesVERSION.html"
+lhe_stat = "/eos/home-y/yangc/FCC/statlhe.html"
+delphes_stat = "/eos/home-y/yangc/FCC/statdelphesVERSION.html"
 
 # web
 lhe_web = "/eos/experiment/fcc/www/data/FCChh/LHEevents.txt"
-delphes_web = "/eos/experiment/fcc/www/data/FCChh/Delphesevents_VERSION_DETECTOR.txt"
+delphes_web = "/eos/home-y/yangc/FCC/Delphesevents_VERSION_DETECTOR.txt"
 
 # yaml directory
-yamldir = '/afs/cern.ch/work/f/fccsw/public/FCCDicts/yaml/FCChh/'
+yamldir = '/eos/home-y/yangc/FCC/mg5events/'
 
 # proc lists
 procList = [
      # '/afs/cern.ch/work/f/fccsw/public/FCCDicts/FCChh_procDict_VERSION.json',
      # '/afs/cern.ch/work/f/fccsw/public/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
-     '/eos/experiment/fcc/www/data/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
+     '/eos/home-y/yangc/FCC/FCChh_procDict_VERSION_DETECTOR.json',
      # '/eos/experiment/fcc/hh/utils/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
 ]
 
 ##eos directory for MG5@MCatNLO gridpacks
 gp_dir      = '/eos/experiment/fcc/hh/generation/gridpacks/'
 ##eos directory for lhe files
-lhe_dir     = '/eos/experiment/fcc/hh/generation/lhe/'
+lhe_dir     = '/eos/home-y/yangc/FCC/mg5events/'
 ##extension
 lhe_ext     ='.lhe.gz'
 
@@ -45,7 +45,7 @@ prodTag = {
 defaultstack='/cvmfs/fcc.cern.ch/sw/latest/setup.sh'
 
 ##eos directory for FCCSW pythia delphes files
-delphes_dir = '/eos/experiment/fcc/hh/generation/DelphesEvents/'
+delphes_dir = '/eos/home-y/yangc/FCC/DelphesEvents/'
 ##extension
 delphes_ext='.root'
 ##name of the ttree
@@ -456,6 +456,7 @@ decaylist = {
 'mg_pp_vbf_h01j_5f_84TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_vbf_h01j_5f_100TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_vbf_h01j_5f_120TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
+'mg_pp_tth01j_5f_50TeV':['haa', 'haaexcl'],
 'mg_pp_tth01j_5f_60TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_tth01j_5f_72TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_tth01j_5f_80TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
@@ -850,12 +851,13 @@ gridpacklist = {
 'mg_pp_vbf_h01j_5f_100TeV':['vbf higgs + 0/1 jets',' @ 100 TeV, inclusive','xqcut = 40, qCut = 60','84.06','4.3', '1'],
 'mg_pp_vbf_h01j_5f_120TeV':['vbf higgs + 0/1 jets',' @ 120 TeV, inclusive','xqcut = 40, qCut = 60','105.45','4.3', '1'],
 
-'mg_pp_tth01j_5f_60TeV':['higgs associated with top pair + 0/1 jets','@ 60 TeV, inclusive','xqcut = 80, qCut = 120','17.38','1.22','1'],
-'mg_pp_tth01j_5f_72TeV':['higgs associated with top pair + 0/1 jets','@ 72 TeV, inclusive','xqcut = 80, qCut = 120','24.60','1.22','1'],
-'mg_pp_tth01j_5f_80TeV':['higgs associated with top pair + 0/1 jets','@ 80 TeV, inclusive','xqcut = 80, qCut = 120','29.90','1.22','1'],
-'mg_pp_tth01j_5f_84TeV':['higgs associated with top pair + 0/1 jets','@ 84 TeV, inclusive','xqcut = 80, qCut = 120','32.70','1.22','1'],
-'mg_pp_tth01j_5f_100TeV':['higgs associated with top pair + 0/1 jets','@ 100 TeV, inclusive','xqcut = 80, qCut = 120','44.55','1.22','1'],
-'mg_pp_tth01j_5f_120TeV':['higgs associated with top pair + 0/1 jets','@ 120 TeV, inclusive','xqcut = 80, qCut = 120', '61.49','1.22','1'],
+'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','12.16','1.22','0.105'],
+'mg_pp_tth01j_5f_60TeV':['higgs associated with top pair + 0/1 jets','@ 60 TeV, inclusive','xqcut = 80, qCut = 120','17.38','1.22','1.0'],
+'mg_pp_tth01j_5f_72TeV':['higgs associated with top pair + 0/1 jets','@ 72 TeV, inclusive','xqcut = 80, qCut = 120','24.60','1.22','1.0'],
+'mg_pp_tth01j_5f_80TeV':['higgs associated with top pair + 0/1 jets','@ 80 TeV, inclusive','xqcut = 80, qCut = 120','29.90','1.22','1.0'],
+'mg_pp_tth01j_5f_84TeV':['higgs associated with top pair + 0/1 jets','@ 84 TeV, inclusive','xqcut = 80, qCut = 120','32.70','1.22','1.0'],
+'mg_pp_tth01j_5f_100TeV':['TESTER - higgs associated with top pair + 0/1 jets','@ 100 TeV, inclusive','xqcut = 80, qCut = 120','44.55','1.22','1.0'],
+'mg_pp_tth01j_5f_120TeV':['higgs associated with top pair + 0/1 jets','@ 120 TeV, inclusive','xqcut = 80, qCut = 120', '61.49','1.22','1.0'],
 
 'mg_pp_vh012j_5f_60TeV':['higgsstrahlung + 0/1/2 jets','@ 60 TeV, inclusive','xqcut = 40, qCut = 60','20.18','1.32','1.0'],
 'mg_pp_vh012j_5f_72TeV':['higgsstrahlung + 0/1/2 jets','@ 72 TeV, inclusive','xqcut = 40, qCut = 60','25.22','1.32','1.0'],
@@ -1644,6 +1646,9 @@ gridpacklist = {
 'mg_pp_vbf_hh_C2V100_CV100_lambda200':['pp VBF HH angelas gridpack','','','1.0','1.0','1.0'], #TESTER 
 'mg_pp_vbf_hh_C2V200_CV100_lambda100':['pp VBF HH angelas gridpack','','','1.0','1.0','1.0'], #TESTER 
 
+# ttH(yy) @ 50 TeV
+'mg_pp_ttH_yy_50TeV':['ttH(yy) 50 TeV events','1','1','1','1','1'], #TESTER
+
 # new 84 TeV samp
 
 'mg_pp_wwz_5f_84TeV': ['wwz', '', '', '1.19631639', '1.0','1.0'],
@@ -1691,6 +1696,8 @@ gridpacklist = {
 
 'mg_pp_zjj_4f_84TeV': ['Z+ 2 jets @ 84 TeV','pT j > 80 GeV','No Jet matching', '1.0', '1.0', '1.0'],
 'mg_pp_zjj_4f_100TeV': ['tZ + 2 jets @ 100 TeV','pT j > 80 GeV','No Jet matching', '1.0', '1.0', '1.0'],
+'mg_pp_tth_5f_50TeV': ['ttH, no extra jets', 'Inclusive', 'No Jet Matching', '1.0', '1.0', '1.0'],
+'mg_pp_ttyy_5f_50TeV': ['ttyy, no extra jets', 'Inclusive', 'No Jet Matching', '1.0', '1.0', '1.0'],
 
 'mg_pp_jj_HT_200_317_5f_84TeV': ['', '', '', '18113075.3', '1.0', '1.0'],
 'mg_pp_jj_HT_317_502_5f_84TeV': ['', '', '', '3527789.6', '1.0', '1.0'],
