@@ -6,7 +6,7 @@ define bosh = Z W+ W-
 generate p p > h j j $ top bos h QED=3 QCD = 0 @0
 add process p p > h j j j $ top bos h QED=3 QCD = 1 @1
 
-output /afs/cern.ch/user/o/oarakji/EventProducer/outputs_gp/mg_pp_vbf_h01j_5f_50TeV_DUMMYSEED
+output /eos/home-o/oarakji/tth/outputs_gp/mg_pp_vbf_h01j_5f_50TeV
 
 ######## DELIMITER (!!! NEED THIS LINE !!!) ##################
 

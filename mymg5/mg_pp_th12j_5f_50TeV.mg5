@@ -3,40 +3,44 @@ define lept = l+ l- vl vl~
 define bos = Z W+ W- a
 define top = t t~
 define bosh = Z W+ W-
-generate p p > top top a a QED=2 @0
-add process p p > top top a a j QED=2 @1
+generate p p > top h j $$ w+ w- [QCD]
+add process p p > top h j j $$ w+ w- [QCD]
 
-output /afs/cern.ch/user/o/oarakji/EventProducer/outputs_gp/ttyy
+output /eos/home-o/oarakji/tth/outputs_gp/mg_pp_tth01j_5f_50TeV
+
 
 ######## DELIMITER (!!! NEED THIS LINE !!!) ##################
 
-set lhapdf /afs/cern.ch/work/b/bistapf/lhapdf/LHAPDF-6.1.6/install/bin/lhapdf-config
-launch /afs/cern.ch/user/o/oarakji/EventProducer/outputs_gp/ttyy
 
+launch DUMMYPROCESS
 set iseed DUMMYSEED
 set nevents DUMMYNEVENTS
 
 set ebeam1 25000
 set ebeam2 25000
+
 set pdlabel lhapdf
 set lhaid 260000
+
 set ickkw 1
 set alpsfact 1.0
 set chcluster False
 set asrwgtflavor 5
 set auto_ptj_mjj False
 set xqcut 80.0
-set mmaa 105.0
-set mmaamax 145.0
+
 set bwcutoff 30.0
+
 set ptj 5.0
 set ptb 5.0
 set pta 5.0
 set ptl 5.0
+
 set etaj 8.0
 set etab 8.0
 set etaa 8.0
 set etal 8.0
+
 set drbb 0.001 
 set drll 0.001 
 set draa 0.001 
@@ -44,5 +48,11 @@ set drbj 0.001
 set draj 0.3
 set drbl 0.001  
 set dral 0.3  
+
+set mmll 20.0
+
 set maxjetflavor 5
+
 set use_syst False
+
+set gridpack True

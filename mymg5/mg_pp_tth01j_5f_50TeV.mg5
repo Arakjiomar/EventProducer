@@ -6,12 +6,13 @@ define bosh = Z W+ W-
 generate p p > top top h $ top bos h QED=1 @0
 add process p p > top top h j $ top bos h QED=1 @1
 
-output DUMMYPROCESS
+output /eos/home-o/oarakji/tth/outputs_gp/mg_pp_tth01j_5f_50TeV
+
 
 ######## DELIMITER (!!! NEED THIS LINE !!!) ##################
 
 
-launch DUMMYPROCESS
+launch /eos/home-o/oarakji/tth/outputs_gp/mg_pp_tth01j_5f_50TeV
 set iseed DUMMYSEED
 set nevents DUMMYNEVENTS
 
@@ -53,3 +54,5 @@ set mmll 20.0
 set maxjetflavor 5
 
 set use_syst False
+
+set gridpack True
