@@ -475,8 +475,11 @@ decaylist = {
 'mg_pp_tth01j_5f_84TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_tth01j_5f_100TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_tth01j_5f_120TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
-#50TeV addition
+#50TeV addition ttH and tH12j and vh012
+'mg_pp_tth01j_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_vh012j_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
+'mg_pp_th12j_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
+
 'mg_pp_vh012j_5f_60TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_vh012j_5f_72TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_vh012j_5f_80TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
@@ -2001,22 +2004,24 @@ gridpacklist = {
 #added by Omar Arakji
 'mg_pp_tth_5f_50TeV':['higgs associated with top pair + no extra jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','7.684','1.22','1'],
 'mg_pp_ttyy_5f_50TeV':['top pair with photon pair, leading order, @ 50 TeV','Semileptonic ttbar, 90 < maa < 175 GeV','No Jet Matching','0.3545','1','1.0'],
-'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','14.23','1.22','1'],
+'mg_pp_tth01j_5f_50TeV':['higgs associated with top pair + 0/1 jets','@ 50 TeV, inclusive','xqcut = 80, qCut = 120','14.09','1.22','1'],
 'mg_pp_ttaa01j_5f_50TeV': ['ttaa +0/1j', '105 < maa < 145', 'Jet Matching settings T.B.C.', '0.07387', '1.0', '1.0'],
 
 
 # gluon fusion for 0, 1 and 2 jets seperately
-'mg_pp_h0j_5f_50TeV':['gluon fusion higgs (finite mt) + 0/1/2 jets','@ 50 TeV, inclusive','xqcut = 30, qCut = 45','161.9','3.76','1.'],
-'mg_pp_h1j_5f_50TeV':['gluon fusion higgs (finite mt) + 0/1/2 jets','@ 50 TeV, inclusive','xqcut = 30, qCut = 45','0','3.76','1.'],
-'mg_pp_h2j_5f_50TeV':['gluon fusion higgs (finite mt) + 0/1/2 jets','@ 50 TeV, inclusive','xqcut = 30, qCut = 45','225.44','3.76','1.'],
+'mg_pp_h01j_5f_50TeV':['gluon fusion higgs (finite mt) + 0/1/2 jets','@ 50 TeV, inclusive','xqcut = 30, qCut = 45','271.7','3.76','1.'],
+
 
 # WH, ZH and yH production mode
-'mg_pp_vh012j_5f_50TeV':['higgsstrahlung + 0/1/2 jets','@ 50 TeV, inclusive','xqcut = 40, qCut = 60','18.34','1.32','1.0'],
+'mg_pp_vh012j_5f_50TeV':['higgsstrahlung + 0/1/2 jets','@ 50 TeV, inclusive','xqcut = 40, qCut = 60','15.25','1.32','1.0'],
 
 # VBF 
-'mg_pp_vbf_h01j_5f_50TeV':['vbf higgs + 0/1 jets',' @ 50 TeV, inclusive','xqcut = 40, qCut = 60','30.69','4.3', '1'],
+'mg_pp_vbf_h01j_5f_50TeV':['vbf higgs + 0/1 jets',' @ 50 TeV, inclusive','xqcut = 40, qCut = 60','30.59','4.3', '1'],
 
-
+# single top and higgs production + 1/2 jets
+'mg_pp_th12j_5f_50TeV':['single top and higgs production + 1/2 jets',' @ 50 TeV, inclusive', 'xqcut = 80, qCut = 120', '1.033', '1.0', '1.0'],
+# single top and higgs production with w- boson + 1/2 jets
+'mg_pp_thw01j_5f_50TeV':['single top and higgs production + 1/2 jets',' @ 50 TeV, inclusive', 'xqcut = 80, qCut = 120', '0.4217', '1.0', '1.0'],
 }
 ##Gridpack list for MG5@MC@NLO
 ##     0          1            2                 3           4           5
