@@ -479,6 +479,8 @@ decaylist = {
 'mg_pp_tth01j_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_vh012j_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_th12j_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
+'mg_pp_thj_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
+'mg_pp_thb_5f_50TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 
 'mg_pp_vh012j_5f_60TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
 'mg_pp_vh012j_5f_72TeV':['hmumu', 'haa', 'haaexcl', 'hlla', 'hllll', 'hlvlv', 'hbb', 'htautau', 'hww', 'hwwlvlv'],
@@ -2020,8 +2022,12 @@ gridpacklist = {
 
 # single top and higgs production + 1/2 jets
 'mg_pp_th12j_5f_50TeV':['single top and higgs production + 1/2 jets',' @ 50 TeV, inclusive', 'xqcut = 80, qCut = 120', '1.033', '1.0', '1.0'],
+'mg_pp_thj_5f_50TeV':['single top and higgs production + 1 jets',' @ 50 TeV, inclusive', 'xqcut = 80, qCut = 120', '1.033', '1.0', '1.0'],
+'mg_pp_thb_5f_50TeV':['single top and higgs production + 1 b',' @ 50 TeV, inclusive', 'xqcut = 80, qCut = 120', '1.033', '1.0', '1.0'],
+
+
 # single top and higgs production with w- boson + 1/2 jets
-'mg_pp_thw01j_5f_50TeV':['single top and higgs production + 1/2 jets',' @ 50 TeV, inclusive', 'xqcut = 80, qCut = 120', '0.4217', '1.0', '1.0'],
+'mg_pp_thw_5f_50TeV':['single top and higgs production + 1/2 jets',' @ 50 TeV, inclusive', 'xqcut = 80, qCut = 120', '0.4217', '1.0', '1.0'],
 }
 ##Gridpack list for MG5@MC@NLO
 ##     0          1            2                 3           4           5

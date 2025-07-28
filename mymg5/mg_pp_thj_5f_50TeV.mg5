@@ -4,8 +4,8 @@ define bos = Z W+ W- a
 define bosh = Z W+ W-
 define p = p b b~
 define j = p
-generate p p > h t j $$ w+ w- [QCD]
-add process p p > h t~ j $$ w+ w- [QCD]
+define top = t t~
+generate p p > h top j $$ bosh [noborn = QCD]
 
 output /afs/cern.ch/user/o/oarakji/EventProducer/outputs_gp/mg_pp_thj_5f_50TeV
 
