@@ -8,18 +8,21 @@ import EventProducer.common.makeyaml as my
 class send_lhe():
 
 #__________________________________________________________
-    def __init__(self,njobs,events, process, islsf, iscondor, queue, priority, ncpus, para, typelhe):
+    def __init__(self,njobs,events, process, islsf, iscondor, isslurm, queue, priority, ncpus, para, typelhe, account='m3792', time='01:00:00'):
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
         self.iscondor = iscondor
+        self.isslurm  = isslurm
         self.queue    = queue
         self.priority = priority
         self.ncpus    = ncpus
         self.user     = os.environ['USER']
         self.para     = para
         self.typelhe  = typelhe
+        self.account  = account
+        self.time     = time
 
 #__________________________________________________________
     def send(self):
@@ -55,11 +58,12 @@ class send_lhe():
             os.system("mkdir -p %s"%yamldir)
 
 
-        if self.islsf==False and self.iscondor==False:
-            print ("Submit issue : LSF nor CONDOR flag defined !!!")
+        if self.islsf==False and self.iscondor==False and self.isslurm==False:
+            print ("Submit issue : LSF, CONDOR, nor SLURM flag defined !!!")
             sys.exit(3)
 
         condor_file_str=''
+        slurm_file_str=''
         while nbjobsSub<self.njobs:
             if self.typelhe == 'gp_mg':
                 uid = ut.getuid2()
@@ -138,6 +142,9 @@ class send_lhe():
             elif self.iscondor==True :
               condor_file_str+=frunfull+" "
               nbjobsSub+=1
+            elif self.isslurm==True :
+              slurm_file_str+=frunfull+" "
+              nbjobsSub+=1
 
         if self.iscondor==True :
             # clean string
@@ -177,6 +184,56 @@ class send_lhe():
             cmdBatch="condor_submit %s"%frunfull_condor
             print (cmdBatch)
             job=ut.SubmitToCondor(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
+            nbjobsSub+=job    
+
+        if self.isslurm==True :
+            # clean string
+            slurm_file_str=slurm_file_str.replace("//","/")
+            #
+            frunname_slurm = 'job_desc_lhe.sh'
+            frunfull_slurm = '%s/%s'%(logdir,frunname_slurm)
+            frun_slurm = None
+            try:
+                frun_slurm = open(frunfull_slurm, 'w')
+            except IOError as e:
+                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+                time.sleep(10)
+                frun_slurm = open(frunfull_slurm, 'w')
+            subprocess.getstatusoutput('chmod 755 %s'%frunfull_slurm)
+            
+            # Write SLURM script for array job
+            frun_slurm.write('#!/bin/bash\n')
+            frun_slurm.write('#SBATCH --account=%s\n'%self.account)
+            frun_slurm.write('#SBATCH --qos=%s\n'%self.queue)
+            frun_slurm.write('#SBATCH --time=%s\n'%self.time)
+            frun_slurm.write('#SBATCH --nodes=1\n')
+            frun_slurm.write('#SBATCH --ntasks-per-node=%s\n'%self.ncpus)
+            frun_slurm.write('#SBATCH --cpus-per-task=1\n')
+            frun_slurm.write('#SBATCH --constraint=cpu\n')
+            frun_slurm.write('#SBATCH --job-name=%s\n'%self.process)
+            frun_slurm.write('#SBATCH --output=%s/slurm_lhe.%%A_%%a.out\n'%logdir)
+            frun_slurm.write('#SBATCH --error=%s/slurm_lhe.%%A_%%a.err\n'%logdir)
+            
+            # Get list of scripts and create array
+            script_list = slurm_file_str.strip().split()
+            frun_slurm.write('#SBATCH --array=1-%d\n'%len(script_list))
+            frun_slurm.write('\n')
+            frun_slurm.write('# Array of script paths\n')
+            frun_slurm.write('SCRIPTS=(\n')
+            for script in script_list:
+                frun_slurm.write('    "%s"\n'%script)
+            frun_slurm.write(')\n')
+            frun_slurm.write('\n')
+            frun_slurm.write('# Execute the script for this array task\n')
+            frun_slurm.write('SCRIPT_PATH="${SCRIPTS[$((SLURM_ARRAY_TASK_ID-1))]}"\n')
+            frun_slurm.write('chmod +x "$SCRIPT_PATH"\n')
+            frun_slurm.write('"$SCRIPT_PATH"\n')
+            frun_slurm.close()
+            #
+            nbjobsSub=0
+            cmdBatch="sbatch %s"%frunfull_slurm
+            print (cmdBatch)
+            job, jobid = ut.SubmitToSlurm(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
             nbjobsSub+=job    
     
         print ('succesfully sent %i  job(s)'%nbjobsSub)

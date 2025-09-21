@@ -8,12 +8,13 @@ import EventProducer.common.makeyaml as my
 class send_stdhep():
 
 #__________________________________________________________
-    def __init__(self,njobs,events, process, islsf, iscondor, islocal, queue, priority, ncpus, para, version, typestdhep, training):
+    def __init__(self,njobs,events, process, islsf, iscondor, isslurm, islocal, queue, priority, ncpus, para, version, typestdhep, training, account='m3792', time='01:00:00'):
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
         self.iscondor = iscondor
+        self.isslurm  = isslurm
         self.islocal  = islocal
         self.queue    = queue
         self.priority = priority
@@ -23,6 +24,8 @@ class send_stdhep():
         self.version  = version
         self.typestdhep  = typestdhep
         self.training = training
+        self.account  = account
+        self.time     = time
 
 #__________________________________________________________
     def send(self):

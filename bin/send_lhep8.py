@@ -12,13 +12,14 @@ import EventProducer.common.makeyaml as my
 class send_lhep8():
 
 #__________________________________________________________
-    def __init__(self,njobs, events, process, islsf, iscondor, islocal, queue, priority, ncpus, para, version, decay, pycard, detector, custom_edm4hep_config):
+    def __init__(self,njobs, events, process, islsf, iscondor, isslurm, islocal, queue, priority, ncpus, para, version, decay, pycard, detector, custom_edm4hep_config, account='m3792', time='01:00:00'):
 
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
         self.iscondor = iscondor
+        self.isslurm  = isslurm
         self.islocal  = islocal
         self.queue    = queue
         self.priority = priority
@@ -30,6 +31,8 @@ class send_lhep8():
         self.detector = detector
         self.user     = os.environ['USER']
         self.custom_edm4hep_config = custom_edm4hep_config
+        self.account  = account
+        self.time     = time
 
 #__________________________________________________________
     def send(self, force):

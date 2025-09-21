@@ -110,6 +110,39 @@ def SubmitToLsf(cmd,nbtrials,nsub):
             return 0,0
 
 #__________________________________________________________
+def SubmitToSlurm(cmd,nbtrials,nsub):
+    submissionStatus=0
+    cmd=cmd.replace('//','/') # -> dav : is it needed?
+    for i in range(nbtrials):            
+        outputCMD = getCommandOutput(cmd)
+        stderr=outputCMD["stderr"].split('\n')
+        stdout=outputCMD["stdout"].split('\n')
+
+        if len(stderr)==1 and stderr[0]=='' :
+            print ("------------GOOD SUB ",nsub)
+            submissionStatus=1
+        else:
+            print ("++++++++++++ERROR submitting, will retry")
+            print ("Trial : "+str(i)+" / "+str(nbtrials))
+            print ("stderr : ",len(stderr))
+            print (stderr)
+            time.sleep(10)
+
+            
+        if submissionStatus==1:
+            # Extract job ID from stdout (sbatch returns "Submitted batch job JOBID")
+            jobid = "unknown"
+            for line in stdout:
+                if "Submitted batch job" in line:
+                    jobid = line.split()[-1]
+                    break
+            return 1, jobid
+        
+        if i==nbtrials-1:
+            print ("failed sumbmitting after: "+str(nbtrials)+" trials, will exit")
+            return 0, 0
+
+#__________________________________________________________
 def file_exist(myfile):
     import os.path
     if os.path.isfile(myfile): return True

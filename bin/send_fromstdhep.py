@@ -11,12 +11,13 @@ import EventProducer.common.makeyaml as my
 class send_fromstdhep():
 
 #__________________________________________________________
-    def __init__(self,njobs, events, process, islsf, iscondor, islocal, queue, priority, ncpus, para, version, detector, decay):  #, pycard):
+    def __init__(self,njobs, events, process, islsf, iscondor, isslurm, islocal, queue, priority, ncpus, para, version, detector, decay, account='m3792', time='01:00:00'):  #, pycard):
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
         self.iscondor = iscondor
+        self.isslurm  = isslurm
         self.islocal  = islocal
         self.queue    = queue
         self.priority = priority
@@ -27,6 +28,8 @@ class send_fromstdhep():
         self.detector = detector
         #self.pycard   = pycard
         self.user     = os.environ['USER']
+        self.account  = account
+        self.time     = time
 
 
 #__________________________________________________________

@@ -8,12 +8,13 @@ import EventProducer.common.makeyaml as my
 class send_kkmc():
 
 #__________________________________________________________
-    def __init__(self,njobs,events, process, islsf, iscondor, islocal, queue, priority, ncpus, para, version):
+    def __init__(self,njobs,events, process, islsf, iscondor, isslurm, islocal, queue, priority, ncpus, para, version, account='m3792', time='01:00:00'):
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
         self.iscondor = iscondor
+        self.isslurm  = isslurm
         self.islocal  = islocal
         self.queue    = queue
         self.priority = priority
@@ -21,6 +22,8 @@ class send_kkmc():
         self.user     = os.environ['USER']
         self.para     = para
         self.version  = version
+        self.account  = account
+        self.time     = time
 
 #__________________________________________________________
     def send(self):

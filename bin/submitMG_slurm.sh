@@ -5,11 +5,9 @@ unset LD_LIBRARY_PATH
 unset PYTHONHOME
 unset PYTHONPATH
 
-# Load LCG environment (adjust if needed)
-# Temporarily disable strict error checking for LCG setup
-set +u
-source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc14-opt/setup.sh;
-set -euo pipefail
+# Load environment for Perlmutter
+module load python/3.11
+module load cray-python
 
 # ----------- 2. Argument Parsing ------------
 SCRIPTFILE=${1}
@@ -20,24 +18,26 @@ NEVENTS=${5}
 CUTFILE=${6:-}
 MODELFILE=${7:-}
 
+echo "Starting job with parameters:"
+echo "SCRIPTFILE: $SCRIPTFILE"
+echo "PROCESSNAME: $PROCESSNAME"
+echo "OUTPUTDIR: $OUTPUTDIR"
+echo "JOBID: $JOBID"
+echo "NEVENTS: $NEVENTS"
+echo "CUTFILE: $CUTFILE"
+echo "MODELFILE: $MODELFILE"
+
 # ----------- 3. Create Unique Working Directory -----------
 WORKDIR=$(mktemp -d /tmp/mg5job_${USER}_${JOBID}_XXXX)
 echo "Working directory: $WORKDIR"
 cd "$WORKDIR"
 
-# ----------- 4. f2py Symlink Workaround -----------
-mkdir -p "$PWD/f2py_bin"
-ln -sf "$(dirname $(which python3))/f2py" "$PWD/f2py_bin/f2py3.11"
-export PATH="$PWD/f2py_bin:$PATH"
-
-# ----------- 5. Diagnostics -----------
+# ----------- 4. Diagnostics -----------
 echo "python3 location: $(which python3)"
 echo "python3 --version: $(python3 --version)"
-echo "numpy version: $(python3 -c 'import numpy; print(numpy.__version__)')"
-echo "f2py3.11 location: $(which f2py3.11)"
-head -5 $(which f2py3.11)
+echo "Current working directory: $(pwd)"
 
-# ----------- 6. Prepare Input Card -----------
+# ----------- 5. Prepare Input Card -----------
 cp "$SCRIPTFILE" .
 SCRIPT=$(basename "$SCRIPTFILE")
 SEED=$((10#$JOBID))
@@ -46,7 +46,7 @@ sed -i -e "s/DUMMYSEED/${SEED}/g" -e "s/DUMMYNEVENTS/${NEVENTS}/g" "$SCRIPT"
 # Split the MG5 card into config00 and config01, excluding the DELIMITER line
 awk '/DELIMITER/{flag=1; next} !flag{print > "config00"} flag{print > "config01"}' "$SCRIPT"
 
-# ----------- 7. Model (UFO) Handling -----------
+# ----------- 6. Model (UFO) Handling -----------
 if [ -n "${MODELFILE:-}" ] && [ -f "${MODELFILE}" ]; then
     echo "Adding model tarball"
     mkdir -p models
@@ -66,9 +66,20 @@ else
     echo "Model file not specified or not found."
 fi
 
-# ----------- 8. Run MadGraph (using your install) -----------
-MG5BASE="/home/oarakji/tth_50TeV_studies/MG5_aMC_v3_4_2"
+# ----------- 7. Run MadGraph -----------
+# Note: Modify this path to point to your MG5 installation on Perlmutter
+# You can also set MG5BASE as an environment variable before running
+if [ -z "$MG5BASE" ]; then
+    MG5BASE="/home/oarakji/tth_50TeV_studies/MG5_aMC_v3_4_2"
+fi
 MG5EXE="${MG5BASE}/bin/mg5_aMC"
+
+# Check if MG5 exists
+if [ ! -f "$MG5EXE" ]; then
+    echo "ERROR: MadGraph5 not found at $MG5EXE"
+    echo "Please modify the MG5BASE path in submitMG_slurm.sh"
+    exit 1
+fi
 
 # Create a single MG5 script that includes both process generation and gridpack creation
 echo "Creating combined MG5 script..."
@@ -80,7 +91,7 @@ cat config01 >> combined_mg5_script.mg5
 echo "Running MG5 with combined script..."
 $MG5EXE combined_mg5_script.mg5
 
-# ----------- 9. Custom cuts.f -----------
+# ----------- 8. Custom cuts.f -----------
 # Find process directory (should be only one created here)
 PROC_DIR=$(ls -d */ | grep -E "mg_pp_.*_${SEED}" | head -1)
 if [ -z "${PROC_DIR}" ]; then
@@ -102,7 +113,7 @@ fi
 
 echo "MG5 execution completed with exit code: $?"
 
-# ----------- 10. Locate Output Gridpack -----------
+# ----------- 9. Locate Output Gridpack -----------
 echo "Looking for gridpack in directory: ${PWD}/${PROC_DIR}"
 echo "Contents of process directory:"
 ls -la "${PWD}/${PROC_DIR}" || echo "Failed to list process directory"
@@ -127,46 +138,18 @@ fi
 
 echo "Found gridpack: ${GRIDPACK_FILE}"
 
-# ----------- 11. Copy Output to EOS -----------
-# Automatically determine gridpack directory from config
-# Extract the base directory from the script path to find the config
-SCRIPT_DIR=$(dirname "${SCRIPTFILE}")
-BASE_DIR=$(dirname "${SCRIPT_DIR}")
-
-# Try to find and read the gridpack directory from config
-if [ -f "${BASE_DIR}/config/param_FCChh.py" ]; then
-    GP_DIR=$(python3 -c "
-import sys
-sys.path.insert(0, '${BASE_DIR}')
-try:
-    from config.param_FCChh import gp_dir
-    print(gp_dir.rstrip('/'))
-except:
-    print('/eos/home-o/oarakji/tth/gridpacks')
-")
-elif [ -f "${BASE_DIR}/config/param_FCCee.py" ]; then
-    GP_DIR=$(python3 -c "
-import sys
-sys.path.insert(0, '${BASE_DIR}')
-try:
-    from config.param_FCCee import gp_dir
-    print(gp_dir.rstrip('/'))
-except:
-    print('/eos/home-o/oarakji/tth/gridpacks')
-")
-else
-    # Fallback to the original OUTPUTDIR if no config found
-    GP_DIR="${OUTPUTDIR}"
-    echo "Warning: No config file found, using default output directory"
-fi
-
-OUTDIR="${GP_DIR}/${PROCESSNAME}"
+# ----------- 10. Copy Output -----------
+# For Perlmutter, modify this to use appropriate storage
+# You may need to adapt this section based on your storage setup
+OUTDIR="${OUTPUTDIR}/${PROCESSNAME}"
 OUTFILE="${OUTDIR}/gridpack_${JOBID}.tar.gz"
 echo "Copying gridpack to ${OUTFILE}"
 mkdir -p "${OUTDIR}"
-xrdcp -N -v "${GRIDPACK_FILE}" "root://eospublic.cern.ch/${OUTFILE}"
 
-# ----------- 12. Cleanup -----------
+# Simple copy for now - modify as needed for your storage system
+cp "${GRIDPACK_FILE}" "${OUTFILE}"
+
+# ----------- 11. Cleanup -----------
 cd /
 rm -rf "$WORKDIR"
 
