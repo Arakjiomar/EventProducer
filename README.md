@@ -36,6 +36,8 @@ git clone git@github.com:YOURGITUSERNAME/EventProducer.git
 
 Then initialise:
 ```
+source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh
+setupATLAS -c el9+batch
 source ./init.sh
 ```
 
