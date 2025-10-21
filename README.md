@@ -2,13 +2,17 @@ EventProducer
 =============
 
 This package is used to centrally produced events for FCC-hh at a center of mass of 100 TeV and for FCC-ee. Any other future collider can also be supported by this framework. 
-In order to use it, please get in contact with the FCC software and computing coordinators as running this package requieres specific rights.
+
+**SLURM/Perlmutter Adaptation**: This repository has been adapted to work with SLURM batch systems, specifically for the NERSC Perlmutter supercomputer. The original Condor-based submission has been replaced with SLURM using `sbatch` commands and includes proper environment setup for Perlmutter.
+
+In order to use it, please get in contact with the FCC software and computing coordinators as running this package requires specific rights.
 
 
 Table of contents
 =================
   * [EventProducer](#eventproducer)
   * [Table of contents](#table-of-contents)
+  * [SLURM/Perlmutter Setup](#slurm-perlmutter-setup)
   * [Clone and initialisation](#clone-and-initilisation)
   * [Generate LHE events from gridpacks](#generate-lhe-events-from-gridpacks)
   * [Generate LHE files directly from MG5](#generate-lhe-files-directly-from-mg5)
@@ -20,6 +24,61 @@ Table of contents
      * [Update the webpage](#update-the-webpage)
      * [Create the sample list for analyses](#create-the-sample-list-for-analyses)
      * [AFS Folders](#afs-folders)
+
+SLURM/Perlmutter Setup
+======================
+
+This EventProducer has been adapted for the NERSC Perlmutter supercomputer using SLURM. Key changes include:
+
+### Environment Setup
+All SLURM batch scripts automatically include the required Perlmutter environment setup:
+```bash
+source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh
+setupATLAS -c el9+batch
+voms-proxy-init -voms atlas
+source ./init.sh
+voms-proxy-info --exists || exit 1  # Verify proxy creation
+```
+
+### Command Line Changes
+- Replace `--condor` with `--slurm` in all commands
+- Add `--account YOUR_ACCOUNT_NAME` (required for Perlmutter)
+- Use SLURM partitions instead of Condor queues: `--queue regular`
+- Specify time limits: `--time 02:00:00`
+- Set resource requirements: `--nodes 1 --ntasks 1 --cpus-per-task 1 --mem 4GB`
+
+### Example Usage
+```bash
+python bin/run.py \
+    --FCChh \
+    --LHE \
+    --send \
+    --slurm \
+    --typelhe mg \
+    --process mg_pp_vbf_h01j_5f_50TeV \
+    --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+    --numJobs 1 \
+    --numEvents 10 \
+    --useV342 \
+    --queue regular \
+    --account YOUR_ACCOUNT_NAME \
+    --time 02:00:00 \
+    --nodes 1 \
+    --ntasks 1 \
+    --cpus-per-task 1 \
+    --mem 4GB
+```
+
+### Sample SLURM Script
+A complete sample SLURM script is provided in `sample_slurm_job.sh` showing the proper setup sequence and example usage.
+
+### SLURM Partitions on Perlmutter
+- `debug`: For testing (30 min max)
+- `regular`: Standard jobs (unlimited time)
+- `shared`: For smaller jobs (8 hours max)
+- `gpu`: For GPU work
+- `premium`: Higher priority
+- `express`: Very high priority
 
 Clone and initialisation
 ========================

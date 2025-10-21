@@ -10,9 +10,14 @@ import EventProducer.common.makeyaml as my
 class send_mglhe():
 
 #__________________________________________________________
-    def __init__(self, islsf, iscondor, mg5card, cutfile, model, para, procname, njobs, nev, queue, priority, ncpus, do_EL7, useV3=False, useV342=False):
+    def __init__(self, islsf, isslurm, mg5card, cutfile, model, para, procname, njobs, nev, queue, priority, ncpus, do_EL7, useV3=False, useV342=False, account='', time='02:00:00', nodes='1', ntasks='1', mem='4GB'):
         self.islsf     = islsf
-        self.iscondor  = iscondor
+        self.isslurm   = isslurm
+        self.account   = account
+        self.time      = time
+        self.nodes     = nodes
+        self.ntasks    = ntasks
+        self.mem       = mem
         self.user      = os.environ['USER']
         self.mg5card   = mg5card
         self.cutfile   = cutfile
@@ -61,11 +66,11 @@ class send_mglhe():
            os.makedirs(jobsdir+'/std/')
            os.makedirs(jobsdir+'/cfg/')
 
-        if self.islsf==False and self.iscondor==False:
-            print ("Submit issue : LSF nor CONDOR flag defined !!!")
+        if self.islsf==False and self.isslurm==False:
+            print ("Submit issue : LSF nor SLURM flag defined !!!")
             sys.exit(3)
 
-        condor_file_params_str=[]
+        slurm_job_params=[]
         while nbjobsSub<self.njobs:
             uid = ut.getuid2()
             myyaml = my.makeyaml(yamldir, uid)
@@ -97,63 +102,64 @@ class send_mglhe():
               batchid=-1
               job,batchid=ut.SubmitToLsf(cmdBatch,10,1)
               nbjobsSub+=job
-            elif self.iscondor==True :
-              condor_file_params_str.append(mg5card+' '+self.procname+' '+outdir+' '+seed+' '+str(self.nev)+' '+cuts+' '+model)
+            elif self.isslurm==True :
+              slurm_job_params.append((mg5card, self.procname, outdir, seed, str(self.nev), cuts, model, script, basename))
               nbjobsSub+=1
 
-        if self.iscondor==True :
-            # parameter file
-            fparamname_condor = 'job_params_mglhe.txt'
-            fparamfull_condor = '%s/%s'%(logdir,fparamname_condor)
-            fparam_condor = None
-            try:
-                fparam_condor = open(fparamfull_condor, 'w')
-            except IOError as e:
-                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
-                time.sleep(10)
-                fparam_condor = open(fparamfull_condor, 'w')
-            for line in condor_file_params_str:
-                fparam_condor.write('%s\n'%line)
-            fparam_condor.close()
-            # condor config
-            frunname_condor = 'job_desc_mglhe.cfg'
-            frunfull_condor = '%s/%s'%(logdir,frunname_condor)
-            frun_condor = None
-            try:
-                frun_condor = open(frunfull_condor, 'w')
-            except IOError as e:
-                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
-                time.sleep(10)
-                frun_condor = open(frunfull_condor, 'w')
-            subprocess.getstatusoutput('chmod 777 %s'%frunfull_condor)
-            #
-            frun_condor.write('executable     = %s\n'%script)
-            frun_condor.write('Log            = %s/condor_job.%s.$(ClusterId).$(ProcId).log\n'%(logdir,str(uid)))
-            frun_condor.write('Output         = %s/condor_job.%s.$(ClusterId).$(ProcId).out\n'%(logdir,str(uid)))
-            frun_condor.write('Error          = %s/condor_job.%s.$(ClusterId).$(ProcId).error\n'%(logdir,str(uid)))
-
-            if self.do_EL7:
-                print("Info: requested to run in centos7 container.")
-                frun_condor.write('MY.WantOS = "el7"\n')
-                frun_condor.write('environment    = "LS_SUBCWD=%s"\n'%logdir) 
-            else:
-                frun_condor.write('getenv         = True\n')
-                frun_condor.write('environment    = "LS_SUBCWD=%s"\n'%logdir) # not sure
-                frun_condor.write('requirements   = ( (OpSysAndVer =?= "AlmaLinux9") && (Machine =!= LastRemoteHost) )\n')
-
-            frun_condor.write('on_exit_remove = (ExitBySignal == False) && (ExitCode == 0)\n')
-            frun_condor.write('max_retries    = 1\n')
-            frun_condor.write('+JobFlavour    = "%s"\n'%self.queue)
-            frun_condor.write('+AccountingGroup = "%s"\n'%self.priority)
-            frun_condor.write('RequestCpus = %s\n'%self.ncpus)
-            frun_condor.write('queue arguments from %s\n'%fparamfull_condor)
-            frun_condor.close()
-            #
+        if self.isslurm==True :
+            # Submit individual SLURM jobs
             nbjobsSub=0
-            cmdBatch="condor_submit %s"%frunfull_condor
-            print (cmdBatch)
-            job=ut.SubmitToCondor(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
-            nbjobsSub+=job
+            for job_params in slurm_job_params:
+                mg5card, procname, outdir, seed, nev, cuts, model, script, basename = job_params
+                
+                # Create SLURM batch script
+                slurm_script_name = '%s/slurm_%s.sh' % (jobsdir, basename)
+                
+                try:
+                    fslurm = open(slurm_script_name, 'w')
+                except IOError as e:
+                    print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+                    time.sleep(10)
+                    fslurm = open(slurm_script_name, 'w')
+                
+                # Write SLURM header with Perlmutter setup
+                fslurm.write('#!/bin/bash\n')
+                fslurm.write('#SBATCH --job-name=mglhe_%s\n' % basename)
+                fslurm.write('#SBATCH --partition=%s\n' % self.queue)
+                if self.account:
+                    fslurm.write('#SBATCH --account=%s\n' % self.account)
+                fslurm.write('#SBATCH --time=%s\n' % self.time)
+                fslurm.write('#SBATCH --nodes=%s\n' % self.nodes)
+                fslurm.write('#SBATCH --ntasks=%s\n' % self.ntasks)
+                fslurm.write('#SBATCH --cpus-per-task=%s\n' % self.ncpus)
+                fslurm.write('#SBATCH --mem=%s\n' % self.mem)
+                fslurm.write('#SBATCH --output=%s/std/%s.out\n' % (jobsdir, basename))
+                fslurm.write('#SBATCH --error=%s/std/%s.err\n' % (jobsdir, basename))
+                fslurm.write('\n')
+                
+                # Add Perlmutter environment setup
+                fslurm.write('# Perlmutter environment and authentication setup\n')
+                fslurm.write('source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh\n')
+                fslurm.write('setupATLAS -c el9+batch\n')
+                fslurm.write('voms-proxy-init -voms atlas\n')
+                fslurm.write('source ./init.sh\n')
+                fslurm.write('\n')
+                fslurm.write('# Check VOMS proxy was created\n')
+                fslurm.write('voms-proxy-info --exists || exit 1\n')
+                fslurm.write('\n')
+                
+                # Execute the MG5 script with parameters
+                fslurm.write('# Execute the MG5 job\n')
+                fslurm.write('%s %s %s %s %s %s %s %s\n' % (script, mg5card, procname, outdir, seed, nev, cuts, model))
+                fslurm.close()
+                
+                subprocess.getstatusoutput('chmod +x %s' % slurm_script_name)
+                
+                # Submit the SLURM job
+                cmdBatch="sbatch %s" % slurm_script_name
+                print (cmdBatch)
+                job=ut.SubmitToSlurm(cmdBatch,10,"%i/%i"%(nbjobsSub,len(slurm_job_params)))
+                nbjobsSub+=job
 
         print ('succesfully sent %i  job(s)'%nbjobsSub)
 

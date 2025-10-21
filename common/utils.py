@@ -110,6 +110,39 @@ def SubmitToLsf(cmd,nbtrials,nsub):
             return 0,0
 
 #__________________________________________________________
+def SubmitToSlurm(cmd,nbtrials,nsub):
+    """Submit jobs to SLURM using sbatch command"""
+    submissionStatus=0
+    cmd=cmd.replace('//','/') # clean up double slashes
+    for i in range(nbtrials):            
+        outputCMD = getCommandOutput(cmd)
+        stderr=outputCMD["stderr"].split('\n')
+        stdout=outputCMD["stdout"].split('\n')
+
+        # SLURM sbatch returns job ID on stdout and errors on stderr
+        if len(stderr)==1 and stderr[0]=='' and len(stdout) > 0:
+            # Check if stdout contains "Submitted batch job"
+            for line in stdout:
+                if "Submitted batch job" in line:
+                    print ("------------GOOD SLURM SUB ",nsub)
+                    submissionStatus=1
+                    break
+        else:
+            print ("++++++++++++ERROR submitting to SLURM, will retry")
+            print ("Trial : "+str(i)+" / "+str(nbtrials))
+            print ("stderr : ",len(stderr))
+            print (stderr)
+            print ("stdout : ",stdout)
+            time.sleep(10)
+            
+        if submissionStatus==1:
+            return 1
+        
+        if i==nbtrials-1:
+            print ("failed submitting to SLURM after: "+str(nbtrials)+" trials, will exit")
+            return 0
+
+#__________________________________________________________
 def file_exist(myfile):
     import os.path
     if os.path.isfile(myfile): return True

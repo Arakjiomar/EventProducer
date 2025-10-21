@@ -8,16 +8,21 @@ import EventProducer.common.makeyaml as my
 class send_kkmc():
 
 #__________________________________________________________
-    def __init__(self,njobs,events, process, islsf, iscondor, islocal, queue, priority, ncpus, para, version):
+    def __init__(self,njobs,events, process, islsf, isslurm, islocal, queue, priority, ncpus, para, version, account='', time='02:00:00', nodes='1', ntasks='1', mem='4GB'):
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
-        self.iscondor = iscondor
+        self.isslurm  = isslurm
         self.islocal  = islocal
         self.queue    = queue
         self.priority = priority
         self.ncpus    = ncpus
+        self.account  = account
+        self.time     = time
+        self.nodes    = nodes
+        self.ntasks   = ntasks
+        self.mem      = mem
         self.user     = os.environ['USER']
         self.para     = para
         self.version  = version
@@ -56,11 +61,11 @@ class send_kkmc():
                 sys.exit(3)
 
 
-        if self.islsf==False and self.iscondor==False and self.islocal==False:
-            print ("Submit issue : LSF nor CONDOR nor Local flag defined !!!")
+        if self.islsf==False and self.isslurm==False and self.islocal==False:
+            print ("Submit issue : LSF nor SLURM nor Local flag defined !!!")
             sys.exit(3)
 
-        condor_file_str=''
+        slurm_scripts_list=[]
         while nbjobsSub<self.njobs:
             uid = int(ut.getuid2())
 
@@ -157,8 +162,8 @@ class send_kkmc():
               batchid=-1
               job,batchid=ut.SubmitToLsf(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
               nbjobsSub+=job
-            elif self.iscondor==True :
-              condor_file_str+=frunfull+" "
+            elif self.isslurm==True :
+              slurm_scripts_list.append(frunfull)
               nbjobsSub+=1
 
             elif self.islocal==True:
@@ -166,45 +171,58 @@ class send_kkmc():
                 nbjobsSub+=1
                 os.system('%s'%frunfull)
 
-        if self.iscondor==True :
-            # clean string
-            condor_file_str=condor_file_str.replace("//","/")
-            #
-            frunname_condor = 'job_desc_lhe.cfg'
-            frunfull_condor = '%s/%s'%(logdir,frunname_condor)
-            frun_condor = None
-            try:
-                frun_condor = open(frunfull_condor, 'w')
-            except IOError as e:
-                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
-                time.sleep(10)
-                frun_condor = open(frunfull_condor, 'w')
-            subprocess.getstatusoutput('chmod 777 %s'%frunfull_condor)
-            #
-            frun_condor.write('executable     = $(filename)\n')
-            frun_condor.write('Log            = %s/condor_job.%s.$(ClusterId).$(ProcId).log\n'%(logdir,str(uid)))
-            frun_condor.write('Output         = %s/condor_job.%s.$(ClusterId).$(ProcId).out\n'%(logdir,str(uid)))
-            frun_condor.write('Error          = %s/condor_job.%s.$(ClusterId).$(ProcId).error\n'%(logdir,str(uid)))
-            frun_condor.write('getenv         = True\n')
-            frun_condor.write('environment    = "LS_SUBCWD=%s"\n'%logdir) # not sure
-            #frun_condor.write('requirements   = ( (OpSysAndVer =?= "CentOS7") && (Machine =!= LastRemoteHost) )\n')
-            #frun_condor.write('requirements   = ( (OpSysAndVer =?= "SLCern6") && (Machine =!= LastRemoteHost) )\n')
-            frun_condor.write('requirements    = ( (OpSysAndVer =?= "AlmaLinux9") && (Machine =!= LastRemoteHost) && (TARGET.has_avx2 =?= True) )\n')
-
-            frun_condor.write('on_exit_remove = (ExitBySignal == False) && (ExitCode == 0)\n')
-            frun_condor.write('max_retries    = 3\n')
-            frun_condor.write('+JobFlavour    = "%s"\n'%self.queue)
-            frun_condor.write('+AccountingGroup = "%s"\n'%self.priority)
-            frun_condor.write('RequestCpus = %s\n'%self.ncpus)
-
-            frun_condor.write('queue filename matching files %s\n'%condor_file_str)
-            frun_condor.close()
-            #
+        if self.isslurm==True :
+            # Submit individual SLURM jobs for each script
             nbjobsSub=0
-            cmdBatch="condor_submit %s"%frunfull_condor
-            print (cmdBatch)
-            job=ut.SubmitToCondor(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
-            nbjobsSub+=job    
+            for script_path in slurm_scripts_list:
+                # Create SLURM batch script that includes Perlmutter setup
+                slurm_script_name = script_path.replace('.sh', '_slurm.sh')
+                
+                try:
+                    fslurm = open(slurm_script_name, 'w')
+                except IOError as e:
+                    print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+                    time.sleep(10)
+                    fslurm = open(slurm_script_name, 'w')
+                
+                # Write SLURM header with Perlmutter setup
+                fslurm.write('#!/bin/bash\n')
+                fslurm.write('#SBATCH --job-name=kkmc_%s\n' % self.process)
+                fslurm.write('#SBATCH --partition=%s\n' % self.queue)
+                if self.account:
+                    fslurm.write('#SBATCH --account=%s\n' % self.account)
+                fslurm.write('#SBATCH --time=%s\n' % self.time)
+                fslurm.write('#SBATCH --nodes=%s\n' % self.nodes)
+                fslurm.write('#SBATCH --ntasks=%s\n' % self.ntasks)
+                fslurm.write('#SBATCH --cpus-per-task=%s\n' % self.ncpus)
+                fslurm.write('#SBATCH --mem=%s\n' % self.mem)
+                fslurm.write('#SBATCH --output=%s/slurm_job.%%j.out\n' % logdir)
+                fslurm.write('#SBATCH --error=%s/slurm_job.%%j.err\n' % logdir)
+                fslurm.write('\n')
+                
+                # Add Perlmutter environment setup
+                fslurm.write('# Perlmutter environment and authentication setup\n')
+                fslurm.write('source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh\n')
+                fslurm.write('setupATLAS -c el9+batch\n')
+                fslurm.write('voms-proxy-init -voms atlas\n')
+                fslurm.write('source ./init.sh\n')
+                fslurm.write('\n')
+                fslurm.write('# Check VOMS proxy was created\n')
+                fslurm.write('voms-proxy-info --exists || exit 1\n')
+                fslurm.write('\n')
+                
+                # Execute the original script
+                fslurm.write('# Execute the EventProducer job\n')
+                fslurm.write('bash %s\n' % script_path)
+                fslurm.close()
+                
+                subprocess.getstatusoutput('chmod +x %s' % slurm_script_name)
+                
+                # Submit the SLURM job
+                cmdBatch="sbatch %s" % slurm_script_name
+                print (cmdBatch)
+                job=ut.SubmitToSlurm(cmdBatch,10,"%i/%i"%(nbjobsSub,len(slurm_scripts_list)))
+                nbjobsSub+=job    
     
         print ('succesfully sent %i  job(s)'%nbjobsSub)
 
