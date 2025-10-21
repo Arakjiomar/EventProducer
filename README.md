@@ -3,7 +3,7 @@ EventProducer
 
 This package is used to centrally produced events for FCC-hh at a center of mass of 100 TeV and for FCC-ee. Any other future collider can also be supported by this framework. 
 
-**SLURM/Perlmutter Adaptation**: This repository has been adapted to work with SLURM batch systems, specifically for the NERSC Perlmutter supercomputer. The original Condor-based submission has been replaced with SLURM using `sbatch` commands and includes proper environment setup for Perlmutter.
+**Perlmutter Adaptation**: This repository has been adapted to work on the NERSC Perlmutter supercomputer with local storage paths. The original CERN EOS/AFS dependencies have been replaced with local NERSC storage directories.
 
 In order to use it, please get in contact with the FCC software and computing coordinators as running this package requires specific rights.
 
@@ -12,7 +12,7 @@ Table of contents
 =================
   * [EventProducer](#eventproducer)
   * [Table of contents](#table-of-contents)
-  * [SLURM/Perlmutter Setup](#slurm-perlmutter-setup)
+  * [Perlmutter Setup](#perlmutter-setup)
   * [Clone and initialisation](#clone-and-initilisation)
   * [Generate LHE events from gridpacks](#generate-lhe-events-from-gridpacks)
   * [Generate LHE files directly from MG5](#generate-lhe-files-directly-from-mg5)
@@ -23,153 +23,156 @@ Table of contents
      * [Cleaning bad jobs](#cleaning-bad-jobs)
      * [Update the webpage](#update-the-webpage)
      * [Create the sample list for analyses](#create-the-sample-list-for-analyses)
-     * [AFS Folders](#afs-folders)
 
-SLURM/Perlmutter Setup
-======================
+Perlmutter Setup
+================
 
-This EventProducer has been adapted for the NERSC Perlmutter supercomputer using SLURM. Key changes include:
+This EventProducer has been adapted for the NERSC Perlmutter supercomputer with local storage. Key changes include:
 
 ### Environment Setup
-All SLURM batch scripts automatically include the required Perlmutter environment setup:
+Before running any EventProducer commands, you must source the environment setup:
 ```bash
-source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh
-setupATLAS -c el9+batch
-voms-proxy-init -voms atlas
-source ./init.sh
-voms-proxy-info --exists || exit 1  # Verify proxy creation
+source /global/homes/o/oarakji/setup_mg5_env.sh
 ```
 
-### Command Line Changes
-- Replace `--condor` with `--slurm` in all commands
-- Add `--account YOUR_ACCOUNT_NAME` (required for Perlmutter)
-- Use SLURM partitions instead of Condor queues: `--queue regular`
-- Specify time limits: `--time 02:00:00`
-- Set resource requirements: `--nodes 1 --ntasks 1 --cpus-per-task 1 --mem 4GB`
+This script automatically:
+- Sets up MG5 v3.4.2 environment
+- Configures LHAPDF paths and PDF sets
+- Initializes EventProducer environment
+- Sets proper Python paths
+
+### Storage Locations
+All data is stored locally on NERSC instead of CERN EOS/AFS:
+- **Gridpacks**: `/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks/`
+- **LHE files**: `/global/cfs/cdirs/atlas/oarakji/myFiles/lhe/`
+- **ROOT files**: `/global/cfs/cdirs/atlas/oarakji/myFiles/root/`
+- **PDF sets**: `/global/homes/o/oarakji/software/lhapdf/share/LHAPDF/`
+- **Delphes cards**: `/global/cfs/cdirs/atlas/oarakji/myFiles/delphescards/`
+- **Pythia cards**: `/global/cfs/cdirs/atlas/oarakji/myFiles/pythiacards/`
 
 ### Example Usage
 ```bash
-python bin/run.py \
-    --FCChh \
-    --LHE \
-    --send \
-    --slurm \
-    --typelhe mg \
-    --process mg_pp_vbf_h01j_5f_50TeV \
-    --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
-    --numJobs 1 \
-    --numEvents 10 \
-    --useV342 \
-    --queue regular \
-    --account YOUR_ACCOUNT_NAME \
-    --time 02:00:00 \
-    --nodes 1 \
-    --ntasks 1 \
-    --cpus-per-task 1 \
-    --mem 4GB
+# Source environment first
+source /global/homes/o/oarakji/setup_mg5_env.sh
+
+# Run VBF Higgs generation example
+python bin/run.py --FCChh --LHE --send --local --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV \
+  --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 1 -n 10 --useV342
 ```
-
-### Sample SLURM Script
-A complete sample SLURM script is provided in `sample_slurm_job.sh` showing the proper setup sequence and example usage.
-
-### SLURM Partitions on Perlmutter
-- `debug`: For testing (30 min max)
-- `regular`: Standard jobs (unlimited time)
-- `shared`: For smaller jobs (8 hours max)
-- `gpu`: For GPU work
-- `premium`: Higher priority
-- `express`: Very high priority
 
 Clone and initialisation
 ========================
 
-If you do not attempt to contribute to the repository, simply clone it:
-```
+This EventProducer has been adapted for Perlmutter and is ready to use. If you need to clone it:
+```bash
 git clone git@github.com:HEP-FCC/EventProducer.git
 ```
 
-If you aim at contributing to the repository, you need to fork and then clone the forked repository:
-```
-git clone git@github.com:YOURGITUSERNAME/EventProducer.git
+To initialize the environment for Perlmutter:
+```bash
+# First, source the global environment setup
+source /global/homes/o/oarakji/setup_mg5_env.sh
+
+# Then initialize EventProducer (done automatically by setup script above)
+# source ./init.sh
 ```
 
-Then initialise:
-```
-source ./init.sh
-```
+The environment setup script handles all necessary configuration for MG5, LHAPDF, and EventProducer.
 
 
-Generate LHE files from gripacks
-================================
+Generate LHE files from gridpacks
+=================================
 
 To send jobs starting from a gridpack that does not exist but that you have produced, do the following:
-   - place gridpack on eos 
-     - for FCC-hh ```/eos/experiment/fcc/hh/generation/gridpacks/```
-     - for FCC-ee ```/eos/experiment/fcc/ee/generation/gridpacks/```
-   - if the gridpack is from Madgraph, name it ```mg_process``` (and call option ```gp_mg``` when running generation commands), if from powheg please name it ```pw_process``` (and call option ```gp_pw```),
-   - add to ```config/param_FCCee.py``` an entry corresponding to the gridpack name in the ```gridpacklist``` list, depending on the study.
 
-If the gridpack already exists or has been properly added to the ```param```, then simply run:
+1. Place gridpack in the local Perlmutter storage:
+   * For FCC-hh: `/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks/`
+   * For FCC-ee: `/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks/`
 
+2. Name the gridpack appropriately:
+   * If from Madgraph: `mg_process` (use `gp_mg` option when running)
+   * If from POWHEG: `pw_process` (use `gp_pw` option when running)
+
+3. Add entry to `config/param_FCCee.py` or `config/param_FCChh.py` in the `gridpacklist` list
+
+If the gridpack already exists or has been properly added to the config, then run:
+
+```bash
+python bin/run.py --FCCee --LHE --send --local --typelhe <gp> -p <process> -n <nevents> -N <njobs> --prodtag <prodtag> --detector <detector>
 ```
-python bin/run.py --FCCee --LHE --send --condor --typelhe <gp> -p <process> -n <nevents> -N <njobs> -q <queue> --prodtag <prodtag> --detector <detector>
+
+Example for local execution (10 jobs of 10,000 events):
+
+```bash
+# Source environment first
+source /global/homes/o/oarakji/setup_mg5_env.sh
+
+# Run generation
+python bin/run.py --FCCee --LHE --send --local --typelhe gp_mg -p mg_ee_zhh_ecm365 -n 10000 -N 10 --prodtag spring2021 --detector IDEA
 ```
 
-example to send 10 jobs of 10 000 events of ZHH events at 365GeV using the longlunch queue of HTCondor for FCC--ee for the spring2021 production tag and the IDEA detector:
-
-```
-python bin/run.py --FCCee --LHE --send --condor --typelhe gp_mg -p mg_ee_zhh_ecm365 -n 10000 -N 10 -q longlunch --prodtag spring2021 --detector IDEA
-```
-
-The options ```--ncpus``` and ```--priority``` can also be specified to increase the numbers of cpus on the cluster and to change the priority queue. 
+Note: Replace `--condor` with `--local` for local execution on Perlmutter. 
 
 
 Generate LHE files directly from MG5
 =====================================
 
-To send jobs directly from MG5, you need a configuration file (see in ```mg5/examples``` directory ```*.mg5```) and, optionally:
-   - a ```cuts.f``` file (containing additional cuts)
-   - a model (see in ```models``` directory for instance)
+To send jobs directly from MG5, you need a configuration file (see examples in `mymg5` directory `*.mg5`) and optionally:
 
-**N.B.** At the moment no example is generated for FCC-ee this way. Below is an example for FCC-hh.
+* A `cuts.f` file (containing additional cuts)
+* A model (see in `models` directory for instance)
 
-As before, you need to add the process to the ```config/param_FCChh.py``` file. Thn you can run with the following command:
+**N.B.** Examples for both FCC-ee and FCC-hh are available in the `mymg5` directory.
 
+You need to add the process to the `config/param_FCChh.py` or `config/param_FCCee.py` file. Then you can run:
+
+```bash
+# Source environment first
+source /global/homes/o/oarakji/setup_mg5_env.sh
+
+# Run MG5 generation example (VBF Higgs at 50 TeV)
+python bin/run.py --FCChh --LHE --send --local --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV \
+  --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 2 -n 10000 --useV342
 ```
-python bin/run.py --FCC --LHE --send --condor --typelhe mg -p mg_pp_hh_test --mg5card mg5/examples/pp_hh.mg5 --model mg5/models/loop_sm_hh.tar -N 2 -n 10000 -q workday
-```
 
-The options ```--ncpus``` and ```--priority``` can also be specified to increase the numbers of cpus on the cluster and to change the priority queue. 
+Note: Replace `--condor` with `--local` for local execution on Perlmutter, and remove queue options as they are not needed for local execution. 
 
 
 
-Generate FCCSW files from the LHE and decay with Pyhtia8
+Generate FCCSW files from the LHE and decay with Pythia8
 ========================================================
 
-1. if you want to let pythia decay without specifiying anything, you can use the default card, but if you have requested extra partons at matrix element, you might need to specify matching parameters to your pythia card
-1. if you want to use a specific decay, make sure that the decay you want is in ```decaylist``` and ```branching_ratios``` of the ```param```
-1. then create appropriate pythia8 card, by appending standard card with decay syntax if needed and add it to the proper directory.
-For FCC-ee this directory is
-```
-/eos/experiment/fcc/ee/generation/FCC-config/spring2021/FCCee/Generator/Pythia8/
-```
-**N.B.**: please do not write there directly. Cards should be added by making a PR to https://github.com/HEP-FCC/FCC-config/tree/spring2021.
-
-1. Run jobs:
+1. If you want to let Pythia decay without specifying anything, you can use the default card, but if you have requested extra partons at matrix element, you might need to specify matching parameters to your Pythia card
+2. If you want to use a specific decay, make sure that the decay you want is in `decaylist` and `branching_ratios` of the `param`
+3. Create appropriate Pythia8 card and place it in the local Pythia cards directory:
 
 ```
-python bin/run.py --FCChh/FCCee --reco --send --type lhep8 --condor -p <process> -N <njobs> -q <queue> --prodtag <prodtag> --detector <detector>
+/global/cfs/cdirs/atlas/oarakji/myFiles/pythiacards/
 ```
 
-Example produce 10 jobs of FCC Delphes events of ttz decaying the Z to neutrinos. :
+4. Run jobs:
 
+```bash
+# Source environment first
+source /global/homes/o/oarakji/setup_mg5_env.sh
+
+# Run Pythia8 processing
+python bin/run.py --FCChh --reco --send --type lhep8 --local \
+  -p <process> -N <njobs> --prodtag <prodtag> --detector <detector>
 ```
-python bin/run.py --FCCee --reco --send --type lhep8 --condor -p mg_ee_zhh_ecm365 -N 10 -q workday --prodtag spring2021 --detector IDEA
-``` 
 
-Please note that the decay in pythia is optional, and that there is no need to specify the number of events to run on as it will by default run over all the events present in the LHE file
+Example to produce 10 jobs of FCC Delphes events:
 
-The options ```--ncpus``` and ```--priority``` can also be specified to increase the numbers of cpus on the cluster and to change the priority queue. 
+```bash
+python bin/run.py --FCCee --reco --send --type lhep8 --local \
+  -p mg_ee_zhh_ecm365 -N 10 --prodtag spring2021 --detector IDEA
+```
+
+Please note that the decay in Pythia is optional, and there is no need to specify the number of events to run on as it will by default run over all the events present in the LHE file. 
 
 
 Generate FCCSW files from Pythia8
@@ -177,99 +180,117 @@ Generate FCCSW files from Pythia8
 
 The Pythia8 manual is available here: http://home.thep.lu.se/~torbjorn/pythia81html/Welcome.html
 
-1. Define process in pythialist in the ```param``` corresponding to your job flavour
-1. Write Pythia8 process card and put it in: ```/eos/experiment/fcc/ee/generation/FCC-config/spring2021/FCCee/Generator/Pythia8``` by making a PR to https://github.com/HEP-FCC/FCC-config/tree/spring2021, 
-for example ```p8_ee_Zbb_ecm91.cmd```
+1. Define process in `pythialist` in the `param` corresponding to your job flavour
+2. Write Pythia8 process card and put it in: `/global/cfs/cdirs/atlas/oarakji/myFiles/pythiacards/`
+   For example: `p8_ee_Zbb_ecm91.cmd`
 
-1. send jobs
+3. Send jobs:
 
+```bash
+# Source environment first
+source /global/homes/o/oarakji/setup_mg5_env.sh
+
+# Run Pythia8 generation
+python bin/run.py --FCChh --reco --send --type p8 --local \
+  -p <process> --pycard <pythia_card> -n <nevents> -N <njobs> \
+  --prodtag <prodtag> --detector <detector>
 ```
-python bin/run.py --FCC-hh/FCCee --reco --send --type p8 --condor -p <process>  --pycard <pythia_card> -n <nevents> -N <njobs> -q <queue> --prodtag <prodtag> --detector <detector>
+
+Example to produce 1 job of 10,000 events of ZH at FCC-ee 240GeV:
+
+```bash
+python bin/run.py --FCCee --reco --send --type p8 --local \
+  -p p8_ee_ZH_ecm240 -n 10000 -N 1 --prodtag spring2021 --detector IDEA
 ```
 
-Example produce 1 job of 10000 events of ZH at FCC-ee 240GeV
-
-```
-python bin/run.py --FCCee --reco --send --type p8 -p p8_ee_ZH_ecm240 -n 10000 -N 1 --condor -q longlunch --prodtag spring2021 --detector IDEA
-```
-
-The options ```--ncpus``` and ```--priority``` can also be specified to increase the numbers of cpus on the cluster and to change the priority queue. 
-
-**Important**: If ```--pycard``` option not specified, this step wil lrun with the default pythia8 card (in this case ```p8_ee_default.cmd```), that does not include specific decays nor specific matching/merging parameters. 
+**Important**: If `--pycard` option not specified, this step will run with the default Pythia8 card (in this case `p8_ee_default.cmd`), that does not include specific decays nor specific matching/merging parameters. 
 
 
 Expert mode
 ===========
-The following commands should be run with care, as they update the database, webapge etc...
-They run every two hours with crontab, thus you will eventually know when your sample is ready to be used.
-The ```--force``` option is used to force the script to run as to optimze running time, processes that have not been flagged will not be checked.
+
+The following commands should be run with care, as they update the database, webpage etc...
+They would typically run every two hours with crontab on the original CERN system, but on Perlmutter they should be run manually as needed.
+The `--force` option is used to force the script to run; to optimize running time, processes that have not been flagged will not be checked.
+
+Note: All references to EOS have been replaced with local Perlmutter storage paths. Database and web functionality may need adaptation for the Perlmutter environment.
 
 Updating the database
-==========================
-1) First one need to check the eos directories that have been populated with new files. 
+=====================
+
+1) First check the local directories that have been populated with new files:
+
 Example for LHE:
-```
-python bin/run.py --FCCee --LHE --checkeos [--process process] [--force]
+```bash
+python bin/run.py --FCCee --LHE --checklocal [--process process] [--force]
 ```
 
 Example for Delphes events:
-```
-python bin/run.py --FCCee --reco --checkeos --prodtag fcc_v04 [--process process] [--force]
+```bash
+python bin/run.py --FCCee --reco --checklocal --prodtag fcc_v04 [--process process] [--force]
 ```
 
-2) Second one need to check the quality of the files that have been produced. 
+2) Second check the quality of the files that have been produced:
+
 Example for LHE:
-```
+```bash
 python bin/run.py --FCCee --LHE --check [--process process] [--force]
 ```
 
 Example for Delphes events:
-```
+```bash
 python bin/run.py --FCCee --reco --check --prodtag fcc_v04 [--process process] [--force]
 ```
 
-3) Then the checked files needs to be merged:
+3) Then the checked files need to be merged:
+
 Example for LHE:
-```
+```bash
 python bin/run.py --FCCee --LHE --merge [--process process] [--force]
 ```
 
 Example for Delphes events:
-```
+```bash
 python bin/run.py --FCCee --reco --merge --prodtag fcc_v04 [--process process] [--force]
 ```
 
 Cleaning bad jobs
 =================
+
 To clean jobs that are flagged as bad, the following command can be used for LHE:
-```
+
+```bash
 python bin/run.py --FCCee --LHE --clean [--process process]
 ```
 
-and for Delphes
-```
+and for Delphes:
+
+```bash
 python bin/run.py --FCCee --reco --clean --prodtag spring2021 [--process process]
 ```
 
-As the code checks the files that are in the end written on eos, we need to clean also old jobs that don't produced outputs 3 days after they started.
-To do so run the following command for LHE
-```
+As the code checks the files that are written to local storage, we need to clean also old jobs that don't produce outputs 3 days after they started.
+To do so run the following command for LHE:
+
+```bash
 python bin/run.py --FCCee --LHE --cleanold [--process process]
 ```
 
-and for Delphes
-```
+and for Delphes:
+
+```bash
 python bin/run.py --FCCee --reco --cleanold --prodtag spring2021 [--process process]
 ```
 
-If you want to completly remove a process, the following command can be used with care for LHE:
+If you want to completely remove a process, the following command can be used with care for LHE:
 
-```
+```bash
 python bin/run.py --FCCee --LHE --remove --process process 
 ```
 
-and for Delphes
-```
+and for Delphes:
+
+```bash
 python bin/run.py --FCCee --reco --remove --process process --prodtag spring2021
 ```
 
@@ -277,13 +298,15 @@ python bin/run.py --FCCee --reco --remove --process process --prodtag spring2021
 Update the webpage
 ==================
 
-The webpage can be updated after the files have been checked and merged by running for LHE
-```
+The webpage can be updated after the files have been checked and merged by running for LHE:
+
+```bash
 python bin/run.py --FCCee --LHE --web
 ```
 
-and for Delphes
-```
+and for Delphes:
+
+```bash
 python bin/run.py --FCCee --reco --web --prodtag spring2021
 ```
 
@@ -291,35 +314,21 @@ python bin/run.py --FCCee --reco --web --prodtag spring2021
 Create the sample list for analyses
 ===================================
 
-To create the list of samples to be used in physics analyses
-```
+To create the list of samples to be used in physics analyses:
+
+```bash
 python bin/run.py --FCCee --reco --sample --prodtag spring2021
 ```
 
 
-AFS Folders
-===========
+Perlmutter Adaptation Notes
+===========================
 
-The EventProducer depends on two hardcoded AFS locations to deploy the FCCDicts
-to. The groups `fccsw:fccdicts-read` and `fccsw:fccdicts-write` should have the
-following access rights:
+This EventProducer has been fully adapted for the NERSC Perlmutter environment:
 
-```
-[fccsw@lxplus767 ~]$ fs listacl /afs/cern.ch/work/f/fccsw/public/FCCDicts
-Access list for /afs/cern.ch/work/f/fccsw/public/FCCDicts is
-Normal rights:
-  fccsw:fccdicts-write rlidwk
-  fccsw:fccdicts-read rl
-  system:administrators rlidwka
-  system:anyuser rl
-  fccsw rlidwka
-[fccsw@lxplus767 ~]$ fs listacl /afs/cern.ch/user/f/fccsw/www/data/FCCDicts
-Access list for /afs/cern.ch/user/f/fccsw/www/data/FCCDicts is
-Normal rights:
-  fccsw:fccdicts-write rlidwk
-  fccsw:fccdicts-read rl
-  webserver:afs rl
-  system:administrators rlidwka
-  system:anyuser l
-  fccsw rlidwka
-  ```
+* **Storage**: All EOS/AFS references replaced with local NERSC storage at `/global/cfs/cdirs/atlas/oarakji/myFiles/`
+* **Software**: MG5 v3.4.2 and LHAPDF 6.5.4 installed locally with proper environment setup
+* **Execution**: Use `--local` instead of `--condor` for job submission
+* **Environment**: Source `/global/homes/o/oarakji/setup_mg5_env.sh` before running any commands
+* **Web functionality**: May require additional setup for Perlmutter environment
+* **Database operations**: Adapted to work with local file system instead of EOS

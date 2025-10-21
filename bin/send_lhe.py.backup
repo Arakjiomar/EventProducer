@@ -121,7 +121,7 @@ class send_lhe():
             
             #TEMP
             #frun.write('cd process/\n')
-            frun.write('export LHAPDF_DATA_PATH=/global/cfs/cdirs/atlas/oarakji/myFiles/lhapdfsets/\n')
+            frun.write('export LHAPDF_DATA_PATH=/eos/home-o/oarakji/tth/lhapdfsets/\n')
             frun.write('./run.sh %i %i\n'%(self.events,int(uid.lstrip('0'))))
             frun.write('echo "finished run"\n')
             #frun.write('python /afs/cern.ch/work/f/fccsw/public/FCCutils/eoscopy.py events.lhe.gz %s/%s/events_%s.lhe.gz\n'%(lhedir,self.process ,uid))

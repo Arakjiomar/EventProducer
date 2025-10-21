@@ -67,7 +67,7 @@ else
 fi
 
 # ----------- 8. Run MadGraph (using your install) -----------
-MG5BASE="/global/homes/o/oarakji/MG5_aMC_v3_4_2"
+MG5BASE="/afs/cern.ch/user/o/oarakji/MG5_aMC_v3.4.2-4fhxpu"
 MG5EXE="${MG5BASE}/bin/mg5_aMC"
 
 # Create a single MG5 script that includes both process generation and gridpack creation

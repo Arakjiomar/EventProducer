@@ -1,33 +1,33 @@
 # module
 module_name = 'config/param_FCChh.py'
 # eos tests
-eostest = '/eos/experiment/fcc/hh/tests/testfile.lhe.gz'
-eostest_size = 1312594
+eostest = '/global/cfs/cdirs/atlas/oarakji/myFiles/tests/testfile.lhe.gz'
+eostest_size = 38  # Size of mock test file
 
 # stat
-lhe_stat = "/eos/home-o/oarakji/tth/stat/statlhe.html"
-delphes_stat = "/eos/home-o/oarakji/tth/stat/delphes_stat/statdelphesVERSION.html"
+lhe_stat = "/global/cfs/cdirs/atlas/oarakji/myFiles/stat/statlhe.html"
+delphes_stat = "/global/cfs/cdirs/atlas/oarakji/myFiles/stat/delphes_stat/statdelphesVERSION.html"
 
 # web
-lhe_web = "/eos/experiment/fcc/www/data/FCChh/LHEevents.txt"
-delphes_web = "/eos/experiment/fcc/www/data/FCChh/Delphesevents_VERSION_DETECTOR.txt"
+lhe_web = "/global/cfs/cdirs/atlas/oarakji/myFiles/www/data/FCChh/LHEevents.txt"
+delphes_web = "/global/cfs/cdirs/atlas/oarakji/myFiles/www/data/FCChh/Delphesevents_VERSION_DETECTOR.txt"
 
 # yaml directory
-yamldir = '/eos/home-o/oarakji/tth/yaml/FCChh/'
+yamldir = '/global/cfs/cdirs/atlas/oarakji/myFiles/yaml/FCChh/'
 
 # proc lists
 procList = [
      # '/afs/cern.ch/work/f/fccsw/public/FCCDicts/FCChh_procDict_VERSION.json',
      # '/afs/cern.ch/work/f/fccsw/public/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
-     '/eos/experiment/fcc/www/data/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
+     '/global/cfs/cdirs/atlas/oarakji/myFiles/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
      # '/eos/experiment/fcc/hh/utils/FCCDicts/FCChh_procDict_VERSION_DETECTOR.json',
 ]
 
 ##eos directory for MG5@MCatNLO gridpacks
-gp_dir      = '/eos/home-o/oarakji/tth/gridpacks/'
+gp_dir      = '/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks/'
 # gp_dir      = '/eos/experiment/fcc/hh/generation/gridpacks/'
 ##eos directory for lhe files
-lhe_dir     = '/eos/home-o/oarakji/tth/lhe/'
+lhe_dir     = '/global/cfs/cdirs/atlas/oarakji/myFiles/lhe/'
 ##extension
 lhe_ext     ='.lhe.gz'
 
@@ -46,7 +46,7 @@ prodTag = {
 defaultstack='/cvmfs/fcc.cern.ch/sw/latest/setup.sh'
 
 ##eos directory for FCCSW pythia delphes files
-delphes_dir = '/eos/home-o/oarakji/tth/myRoot/'
+delphes_dir = '/global/cfs/cdirs/atlas/oarakji/myFiles/root/'
 ##extension
 delphes_ext='.root'
 ##name of the ttree
@@ -55,12 +55,12 @@ treename='events'
 do_weighted = True
 
 ##where the delphes cards are stored
-delphescards_dir = '/eos/experiment/fcc/hh/utils/delphescards/'
+delphescards_dir = '/global/cfs/cdirs/atlas/oarakji/myFiles/delphescards/'
 ##where the pythia cards are stored
-pythiacards_dir  = '/eos/experiment/fcc/hh/utils/pythiacards/'
+pythiacards_dir  = '/global/cfs/cdirs/atlas/oarakji/myFiles/pythiacards/'
 # pythiacards_dir  ='/eos/home-o/oarakji/tth/myCards/pythia8/'
 ##where the FCC config script is stored
-fccconfig_dir    = '/eos/experiment/fcc/hh/utils/config/'
+fccconfig_dir    = '/global/cfs/cdirs/atlas/oarakji/myFiles/config/'
 
 ##delphes base card detector: Scenario I or II from v06 onwards, empty is legacy option for earlier productions
 detectors = ['I', 'II', '']
