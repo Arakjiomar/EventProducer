@@ -129,23 +129,17 @@ class send_mglhe():
                 if self.account:
                     fslurm.write('#SBATCH --account=%s\n' % self.account)
                 fslurm.write('#SBATCH --time=%s\n' % self.time)
-                fslurm.write('#SBATCH --nodes=%s\n' % self.nodes)
-                fslurm.write('#SBATCH --ntasks=%s\n' % self.ntasks)
+                # Use single task configuration for Perlmutter compatibility
+                fslurm.write('#SBATCH --ntasks=1\n')
                 fslurm.write('#SBATCH --cpus-per-task=%s\n' % self.ncpus)
-                fslurm.write('#SBATCH --mem=%s\n' % self.mem)
+                # Remove memory specification to let SLURM use default allocation per CPU
                 fslurm.write('#SBATCH --output=%s/std/%s.out\n' % (jobsdir, basename))
                 fslurm.write('#SBATCH --error=%s/std/%s.err\n' % (jobsdir, basename))
                 fslurm.write('\n')
                 
                 # Add Perlmutter environment setup
-                fslurm.write('# Perlmutter environment and authentication setup\n')
-                fslurm.write('source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh\n')
-                fslurm.write('setupATLAS -c el9+batch\n')
-                fslurm.write('voms-proxy-init -voms atlas\n')
-                fslurm.write('source ./init.sh\n')
-                fslurm.write('\n')
-                fslurm.write('# Check VOMS proxy was created\n')
-                fslurm.write('voms-proxy-info --exists || exit 1\n')
+                fslurm.write('# Perlmutter environment setup\n')
+                fslurm.write('source /global/homes/o/oarakji/setup_complete_env.sh\n')
                 fslurm.write('\n')
                 
                 # Execute the MG5 script with parameters

@@ -51,15 +51,45 @@ All data is stored locally on NERSC instead of CERN EOS/AFS:
 - **Pythia cards**: `/global/cfs/cdirs/atlas/oarakji/myFiles/pythiacards/`
 
 ### Example Usage
-```bash
-# Source environment first
-source /global/homes/o/oarakji/setup_mg5_env.sh
 
-# Run VBF Higgs generation example
-python bin/run.py --FCChh --LHE --send --local --typelhe mg \
+Before running any EventProducer commands, set up the complete environment:
+
+```bash
+# Complete environment setup for Perlmutter
+source /global/homes/o/oarakji/setup_complete_env.sh
+```
+
+This automatically:
+- Activates Python virtual environment with ROOT, numpy, PyYAML, etc.
+- Sets up MG5 v3.4.2 and LHAPDF paths
+- Configures EventProducer PYTHONPATH
+- Sources EventProducer init.sh
+
+**SLURM Execution Example:**
+```bash
+# VBF Higgs generation with SLURM (recommended for production)
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
   -p mg_pp_vbf_h01j_5f_50TeV \
   --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
-  -N 1 -n 10 --useV342
+  -N 1 -n 10 --useV342 \
+  --queue debug --account atlas --time 00:30:00
+```
+
+**Note:** If SLURM submission fails with policy errors, you can run the generated script manually:
+```bash
+# Find the generated script and run it directly
+bash ./BatchOutputs/FCC/lhe/mg_pp_vbf_h01j_5f_50TeV/slurm_*.sh
+```
+
+**Local Testing (for small jobs):**
+```bash
+# Direct script execution for testing
+bin/submitMG_v3_4_2.sh \
+  $(pwd)/mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  mg_pp_vbf_h01j_5f_50TeV \
+  /global/cfs/cdirs/atlas/oarakji/myFiles/lhe \
+  12345 10 \
+  $(pwd)/cuts.f $(pwd)/model.tgz
 ```
 
 Clone and initialisation

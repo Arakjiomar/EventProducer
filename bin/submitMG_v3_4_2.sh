@@ -1,15 +1,23 @@
 #!/bin/bash
 
-# ----------- 1. Environment Setup -----------
-unset LD_LIBRARY_PATH
-unset PYTHONHOME
-unset PYTHONPATH
+# ----------- 1. Environment Setup for Perlmutter -----------
+# Use our custom Perlmutter environment setup
+echo "Setting up Perlmutter environment..."
 
-# Load LCG environment (adjust if needed)
-# Temporarily disable strict error checking for LCG setup
-set +u
-source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc14-opt/setup.sh;
-set -euo pipefail
+# Activate the Python virtual environment that has all the required packages
+source /global/u2/o/oarakji/tth_50TeV_studies/.venv/bin/activate
+
+# Set PYTHONPATH for EventProducer
+export PYTHONPATH=/global/homes/o/oarakji/tth_50TeV_studies:$PYTHONPATH
+
+# Set MG5 environment
+export MG5BASE="/global/homes/o/oarakji/MG5_aMC_v3_4_2"
+export PATH="${MG5BASE}/bin:$PATH"
+
+# Set LHAPDF environment
+export LHAPDF_DATA_PATH="/global/homes/o/oarakji/software/lhapdf/share/LHAPDF"
+export PATH="/global/homes/o/oarakji/software/lhapdf/bin:$PATH"
+export LD_LIBRARY_PATH="/global/homes/o/oarakji/software/lhapdf/lib:$LD_LIBRARY_PATH"
 
 # ----------- 2. Argument Parsing ------------
 SCRIPTFILE=${1}
@@ -27,7 +35,8 @@ cd "$WORKDIR"
 
 # ----------- 4. f2py Symlink Workaround -----------
 mkdir -p "$PWD/f2py_bin"
-ln -sf "$(dirname $(which python3))/f2py" "$PWD/f2py_bin/f2py3.11"
+# Use f2py from our virtual environment
+ln -sf "$(which f2py)" "$PWD/f2py_bin/f2py3.11"
 export PATH="$PWD/f2py_bin:$PATH"
 
 # ----------- 5. Diagnostics -----------
@@ -127,7 +136,7 @@ fi
 
 echo "Found gridpack: ${GRIDPACK_FILE}"
 
-# ----------- 11. Copy Output to EOS -----------
+# ----------- 11. Copy Output to Local Storage -----------
 # Automatically determine gridpack directory from config
 # Extract the base directory from the script path to find the config
 SCRIPT_DIR=$(dirname "${SCRIPTFILE}")
@@ -142,7 +151,7 @@ try:
     from config.param_FCChh import gp_dir
     print(gp_dir.rstrip('/'))
 except:
-    print('/eos/home-o/oarakji/tth/gridpacks')
+    print('/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks')
 ")
 elif [ -f "${BASE_DIR}/config/param_FCCee.py" ]; then
     GP_DIR=$(python3 -c "
@@ -152,19 +161,20 @@ try:
     from config.param_FCCee import gp_dir
     print(gp_dir.rstrip('/'))
 except:
-    print('/eos/home-o/oarakji/tth/gridpacks')
+    print('/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks')
 ")
 else
-    # Fallback to the original OUTPUTDIR if no config found
-    GP_DIR="${OUTPUTDIR}"
-    echo "Warning: No config file found, using default output directory"
+    # Fallback to the default Perlmutter gridpack directory
+    GP_DIR="/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks"
+    echo "Warning: No config file found, using default Perlmutter gridpack directory"
 fi
 
 OUTDIR="${GP_DIR}/${PROCESSNAME}"
 OUTFILE="${OUTDIR}/gridpack_${JOBID}.tar.gz"
 echo "Copying gridpack to ${OUTFILE}"
 mkdir -p "${OUTDIR}"
-xrdcp -N -v "${GRIDPACK_FILE}" "root://eospublic.cern.ch/${OUTFILE}"
+# Use regular cp instead of xrdcp for local filesystem
+cp "${GRIDPACK_FILE}" "${OUTFILE}"
 
 # ----------- 12. Cleanup -----------
 cd /

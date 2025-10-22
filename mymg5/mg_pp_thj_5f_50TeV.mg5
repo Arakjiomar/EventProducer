@@ -7,13 +7,13 @@ define j = p
 define top = t t~
 generate p p > h top j $$ bosh [noborn = QCD]
 
-output /afs/cern.ch/user/o/oarakji/EventProducer/outputs_gp/mg_pp_thj_5f_50TeV
+output /global/cfs/cdirs/atlas/oarakji/myFiles/output_mg5/mg_pp_thj_5f_50TeV
 
 
 ######## DELIMITER (!!! NEED THIS LINE !!!) ##################
 
 
-launch /afs/cern.ch/user/o/oarakji/EventProducer/outputs_gp/mg_pp_thj_5f_50TeV
+launch /global/cfs/cdirs/atlas/oarakji/myFiles/output_mg5/mg_pp_thj_5f_50TeV
 set iseed DUMMYSEED
 set nevents DUMMYNEVENTS
 

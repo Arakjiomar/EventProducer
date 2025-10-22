@@ -6,7 +6,7 @@ define bosh = Z W+ W-
 generate p p > top h j $$ w+ w- [QCD]
 add process p p > top h j j $$ w+ w- [QCD]
 
-output /eos/home-o/oarakji/tth/outputs_gp/mg_pp_tth01j_5f_50TeV
+output /global/cfs/cdirs/atlas/oarakji/myFiles/output_mg5/mg_pp_th12j_5f_50TeV
 
 
 ######## DELIMITER (!!! NEED THIS LINE !!!) ##################

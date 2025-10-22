@@ -2,7 +2,7 @@
 module_name = 'config/param_FCChh.py'
 # eos tests
 eostest = '/global/cfs/cdirs/atlas/oarakji/myFiles/tests/testfile.lhe.gz'
-eostest_size = 38  # Size of mock test file
+eostest_size = 1312594  # Size of actual test file
 
 # stat
 lhe_stat = "/global/cfs/cdirs/atlas/oarakji/myFiles/stat/statlhe.html"
