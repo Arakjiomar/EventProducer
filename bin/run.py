@@ -287,7 +287,7 @@ def main():
 
                 print ('preparing to send lhe jobs from madgraph standalone for process {}'.format(args.process))
                 import EventProducer.bin.send_mglhe as mglhe
-                sendlhe=mglhe.send_mglhe( args.lsf, args.slurm, args.mg5card, args.cutfile, args.model, para, args.process, args.numJobs, args.numEvents, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), args.centos7, args.useV3, args.useV342, args.account, args.time, args.nodes, args.ntasks, args.mem)
+                sendlhe=mglhe.send_mglhe( args.lsf, args.slurm, args.mg5card, args.cutfile, args.model, para, args.process, args.numJobs, args.numEvents, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), args.centos7, args.useV3, args.useV342, args.account, args.time, args.nodes, args.ntasks, args.mem, args.local)
                 sendlhe.send()
 
             elif args.typelhe == 'kkmc' :

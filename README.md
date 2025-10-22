@@ -65,7 +65,9 @@ This automatically:
 - Configures EventProducer PYTHONPATH
 - Sources EventProducer init.sh
 
-**SLURM Execution Example:**
+**SLURM Execution (Production Ready):**
+The EventProducer now includes proper Perlmutter SLURM configuration with all required settings:
+
 ```bash
 # VBF Higgs generation with SLURM (recommended for production)
 python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
@@ -75,15 +77,91 @@ python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
   --queue debug --account atlas --time 00:30:00
 ```
 
-**Note:** If SLURM submission fails with policy errors, you can run the generated script manually:
+**SLURM Features (Automatically Configured):**
+- ✅ **CPU Constraint**: Includes `#SBATCH --constraint=cpu` for Perlmutter CPU nodes
+- ✅ **Account Specification**: Uses `--account atlas` (required for Perlmutter resource allocation)
+- ✅ **Proper Resource Requests**: Single task configuration optimized for MG5 workflows
+- ✅ **Environment Setup**: Automatically sources complete Perlmutter environment
+- ✅ **Random Seeds**: Uses random job IDs for better statistical independence
+
+**CPU Resource Scaling for Different Workloads:**
+
+The EventProducer uses single CPU by default, but you can optimize resources based on your workload:
+
+*Small/Test Jobs (< 10,000 events):*
+```bash
+# Default: 1 CPU, 4GB memory, suitable for testing and small gridpacks
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 1 -n 1000 --useV342 --queue debug --account atlas --time 00:30:00
+```
+
+*Medium Jobs (10,000 - 100,000 events):*
+```bash
+# Recommended: 1 CPU, 8GB memory for standard production
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 1 -n 50000 --useV342 --queue regular --account atlas --time 02:00:00 \
+  --cpus-per-task 1 --mem 8GB
+```
+
+*Large Jobs (> 100,000 events or complex processes):*
+```bash
+# High-memory: 1 CPU, 16GB+ memory for large gridpacks or million-event samples
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
+  -p mg_pp_complex_process --mg5card ./mymg5/complex_process.mg5 \
+  -N 1 -n 1000000 --useV342 --queue regular --account atlas --time 08:00:00 \
+  --cpus-per-task 1 --mem 32GB
+```
+
+*Multi-job Parallel Strategy (Recommended for large samples):*
+```bash
+# Split large samples into multiple parallel jobs for better resource utilization
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 10 -n 100000 --useV342 --queue regular --account atlas --time 04:00:00 \
+  --cpus-per-task 1 --mem 8GB
+# This creates 10 jobs of 100k events each = 1M total events
+```
+
+**Resource Guidelines:**
+- **Memory**: ~4GB base + ~0.1MB per 1000 events + gridpack size
+- **Time**: ~1-5 minutes per 1000 events (varies by process complexity)  
+- **CPU**: MG5 is single-threaded; use multiple jobs rather than multiple CPUs per job
+- **Queue Selection**: `debug` (30min max) for testing, `regular` for production
+
+**Available Resource Parameters:**
+- `--cpus-per-task N`: Number of CPUs per job (default: 1, recommended: keep at 1)
+- `--mem XGB`: Memory allocation (default: 4GB, scale up for large jobs)
+- `--time HH:MM:SS`: Job time limit (adjust based on expected runtime)
+- `--queue QUEUE`: Partition selection (debug/regular/shared/etc.)
+
+**Troubleshooting:** If SLURM submission fails, check the generated script:
 ```bash
 # Find the generated script and run it directly
 bash ./BatchOutputs/FCC/lhe/mg_pp_vbf_h01j_5f_50TeV/slurm_*.sh
 ```
 
-**Local Testing (for small jobs):**
+**Local Execution (Recommended):**
+The EventProducer now supports true local execution with the `--local` flag, which bypasses SLURM entirely:
+
 ```bash
-# Direct script execution for testing
+# Complete VBF Higgs gridpack generation and event production (local)
+python bin/run.py --FCChh --LHE --send --condor --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV \
+  --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 1 -n 10 --useV342 --local
+```
+
+**Key Features of Local Execution:**
+- ✅ **Gridpack Auto-Management**: Generated gridpacks are automatically moved to `/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks/` and renamed to match the MG5 card name (e.g., `mg_pp_vbf_h01j_5f_50TeV.tar.gz`)
+- ✅ **Random Seeds**: Uses random seeds (100000-999999) instead of sequential numbering for better statistical independence
+- ✅ **No SLURM Dependencies**: Runs directly without requiring batch system submission
+- ✅ **Complete Workflow**: Handles MG5 process generation, gridpack creation, and file organization in one command
+
+**Direct Script Execution (Advanced):**
+```bash
+# Direct script execution for debugging
 bin/submitMG_v3_4_2.sh \
   $(pwd)/mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
   mg_pp_vbf_h01j_5f_50TeV \
@@ -171,6 +249,147 @@ python bin/run.py --FCChh --LHE --send --local --typelhe mg \
 
 Note: Replace `--condor` with `--local` for local execution on Perlmutter, and remove queue options as they are not needed for local execution. 
 
+
+Improved Gridpack Management (New Features)
+===========================================
+
+The EventProducer has been enhanced with automatic gridpack management for streamlined workflow:
+
+### Automatic Gridpack Organization
+When using local execution (`--local` flag), the system automatically:
+
+1. **Generates**: Creates gridpack during MG5 process execution
+2. **Locates**: Finds the generated gridpack in the MG5 output directory
+3. **Moves**: Transfers gridpack to the centralized storage location: `/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks/`
+4. **Renames**: Uses the MG5 card filename as the gridpack name (e.g., `mg_pp_vbf_h01j_5f_50TeV.mg5` → `mg_pp_vbf_h01j_5f_50TeV.tar.gz`)
+
+### Benefits
+- **Consistent Naming**: Gridpack names directly match the MG5 card names for easy identification
+- **Centralized Storage**: All gridpacks in one location for easy access and management  
+- **No Manual Steps**: Complete automation from generation to final storage
+- **Random Seeds**: Uses random seeds (100000-999999) for better statistical independence
+
+### Example Usage
+```bash
+# Complete workflow: generates process, creates gridpack, and organizes files
+python bin/run.py --FCChh --LHE --send --condor --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV \
+  --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 1 -n 10 --useV342 --local
+
+# Result: gridpack automatically saved as:
+# /global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks/mg_pp_vbf_h01j_5f_50TeV.tar.gz
+```
+
+Gridpack vs Event Generation Commands
+====================================
+
+The EventProducer supports two main workflows for physics event generation:
+
+## 1. Gridpack Generation (First Step)
+
+Gridpack generation creates a compressed archive containing all the matrix element information needed to generate events later. This is typically done once per process and can be reused multiple times for event generation.
+
+### Key Characteristics:
+- **Output**: Produces gridpack files (`*.tar.gz`) in `/global/cfs/cdirs/atlas/oarakji/myFiles/output_mg5/` 
+- **Reusable**: One gridpack can generate multiple event samples with different parameters
+- **Time**: Takes longer initially but enables fast event generation later
+- **Storage**: Compact gridpack files (typically 10-100 MB)
+
+### Command Structure for Gridpack Generation:
+```bash
+# Setup environment
+source /global/homes/o/oarakji/setup_complete_env.sh
+
+# Generate gridpack using MG5 (no LHE events yet)
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
+  -p <process_name> \
+  --mg5card ./mymg5/<process_card>.mg5 \
+  -N 1 -n 0 --useV342 \
+  --queue debug --account atlas --time 00:30:00
+```
+
+### Example - VBF Higgs Gridpack Generation:
+```bash
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV \
+  --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 1 -n 0 --useV342 \
+  --queue debug --account atlas --time 00:30:00
+```
+
+**Important Notes for Gridpack Generation:**
+- **MUST include `--LHE` flag** - this is required even for gridpack-only generation
+- Use `-n 0` to generate only the gridpack without events
+- Use `-N 1` since you only need one gridpack per process
+- The MG5 card output path determines where the gridpack is stored
+- All `.mg5` cards now output to `/global/cfs/cdirs/atlas/oarakji/myFiles/output_mg5/`
+
+## 2. Event Generation (Second Step)
+
+Event generation uses existing gridpacks to produce LHE event files. This step is fast and can be parallelized across many jobs.
+
+### Key Characteristics:
+- **Input**: Uses existing gridpack files
+- **Output**: Produces LHE event files in `/global/cfs/cdirs/atlas/oarakji/myFiles/lhe/`
+- **Scalable**: Can run many parallel jobs to generate large event samples
+- **Time**: Fast execution (minutes to hours depending on event count)
+- **Storage**: Large LHE files (can be GBs for high statistics)
+
+### Command Structure for Event Generation:
+```bash
+# Setup environment
+source /global/homes/o/oarakji/setup_complete_env.sh
+
+# Generate LHE events from existing gridpack
+python bin/run.py --FCChh --LHE --send --slurm --typelhe gp_mg \
+  -p <process_name> \
+  -N <num_jobs> -n <events_per_job> \
+  --queue regular --account atlas --time 02:00:00
+```
+
+### Example - Generate 100k VBF Higgs Events (10 jobs × 10k events):
+```bash
+python bin/run.py --FCChh --LHE --send --slurm --typelhe gp_mg \
+  -p mg_pp_vbf_h01j_5f_50TeV \
+  -N 10 -n 10000 \
+  --queue regular --account atlas --time 02:00:00
+```
+
+## 3. Combined Generation (Single Step)
+
+You can also generate both gridpack and events in a single command:
+
+```bash
+# Generate gridpack AND events in one go
+python bin/run.py --FCChh --LHE --send --slurm --typelhe mg \
+  -p mg_pp_vbf_h01j_5f_50TeV \
+  --mg5card ./mymg5/mg_pp_vbf_h01j_5f_50TeV.mg5 \
+  -N 5 -n 10000 --useV342 \
+  --queue regular --account atlas --time 04:00:00
+```
+
+## Command Comparison Table
+
+| Purpose | `--typelhe` | `-N` (jobs) | `-n` (events) | `--mg5card` | Output |
+|---------|-------------|-------------|---------------|-------------|---------|
+| **Gridpack Only** | `mg` | 1 | 0 | Required | Gridpack files |
+| **Events from Gridpack** | `gp_mg` | Many | Many | Not used | LHE files |
+| **Both Together** | `mg` | Many | Many | Required | Both |
+
+## Workflow Recommendations
+
+### For Production (Recommended):
+1. **Step 1**: Generate gridpack once
+2. **Step 2**: Generate events from gridpack (can repeat with different parameters)
+
+### For Testing:
+- Use combined generation with small numbers (`-N 1 -n 100`)
+
+### Storage Locations:
+- **Gridpacks**: `/global/cfs/cdirs/atlas/oarakji/myFiles/output_mg5/<process>/`
+- **LHE Events**: `/global/cfs/cdirs/atlas/oarakji/myFiles/lhe/<process>/`
+- **Batch Logs**: `./BatchOutputs/FCC/lhe/<process>/`
 
 
 Generate FCCSW files from the LHE and decay with Pythia8

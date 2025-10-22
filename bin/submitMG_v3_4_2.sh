@@ -112,20 +112,32 @@ fi
 echo "MG5 execution completed with exit code: $?"
 
 # ----------- 10. Locate Output Gridpack -----------
-echo "Looking for gridpack in directory: ${PWD}/${PROC_DIR}"
-echo "Contents of process directory:"
-ls -la "${PWD}/${PROC_DIR}" || echo "Failed to list process directory"
+# Extract the output path from the MG5 card to find the gridpack location
+MG5_OUTPUT_PATH=$(grep "^output " "${SCRIPTFILE}" | awk '{print $2}')
+echo "MG5 output path from card: ${MG5_OUTPUT_PATH}"
 
-# Look for gridpack tarball in the process directory
-GRIDPACK_FILE=$(find "${PWD}/${PROC_DIR}" -name "*gridpack*.tar.gz" -o -name "*gridpack*.tgz" | head -1)
+# Look for gridpack in the MG5 output directory first, then fallback to process directory
+GRIDPACK_FILE=""
+if [ -d "${MG5_OUTPUT_PATH}" ]; then
+    echo "Looking for gridpack in MG5 output directory: ${MG5_OUTPUT_PATH}"
+    ls -la "${MG5_OUTPUT_PATH}" || echo "Failed to list MG5 output directory"
+    GRIDPACK_FILE=$(find "${MG5_OUTPUT_PATH}" -name "*gridpack*.tar.gz" -o -name "*gridpack*.tgz" -o -name "*.tar.gz" | head -1)
+fi
+
+if [ -z "${GRIDPACK_FILE}" ]; then
+    echo "No gridpack found in MG5 output directory, checking process directory: ${PWD}/${PROC_DIR}"
+    ls -la "${PWD}/${PROC_DIR}" || echo "Failed to list process directory"
+    GRIDPACK_FILE=$(find "${PWD}/${PROC_DIR}" -name "*gridpack*.tar.gz" -o -name "*gridpack*.tgz" -o -name "*.tar.gz" | head -1)
+fi
+
 echo "Gridpack search result: ${GRIDPACK_FILE}"
 
 if [ -z "${GRIDPACK_FILE}" ]; then
     echo "ERROR: No gridpack file found!"
+    echo "Looking for gridpack files in ${MG5_OUTPUT_PATH}:"
+    find "${MG5_OUTPUT_PATH}" -name "*gridpack*" -o -name "*.tar.gz" -o -name "*.tgz" 2>/dev/null | head -10
     echo "Looking for gridpack files in ${PWD}/${PROC_DIR}:"
-    find "${PWD}/${PROC_DIR}" -name "*gridpack*" -o -name "*.tar.gz" -o -name "*.tgz" | head -10
-    echo "Full directory tree:"
-    find "${PWD}/${PROC_DIR}" -type f | head -20
+    find "${PWD}/${PROC_DIR}" -name "*gridpack*" -o -name "*.tar.gz" -o -name "*.tgz" 2>/dev/null | head -10
     exit 3
 fi
 
@@ -137,44 +149,21 @@ fi
 echo "Found gridpack: ${GRIDPACK_FILE}"
 
 # ----------- 11. Copy Output to Local Storage -----------
-# Automatically determine gridpack directory from config
-# Extract the base directory from the script path to find the config
-SCRIPT_DIR=$(dirname "${SCRIPTFILE}")
-BASE_DIR=$(dirname "${SCRIPT_DIR}")
+# Use the specified gridpack directory
+GP_DIR="/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks"
 
-# Try to find and read the gridpack directory from config
-if [ -f "${BASE_DIR}/config/param_FCChh.py" ]; then
-    GP_DIR=$(python3 -c "
-import sys
-sys.path.insert(0, '${BASE_DIR}')
-try:
-    from config.param_FCChh import gp_dir
-    print(gp_dir.rstrip('/'))
-except:
-    print('/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks')
-")
-elif [ -f "${BASE_DIR}/config/param_FCCee.py" ]; then
-    GP_DIR=$(python3 -c "
-import sys
-sys.path.insert(0, '${BASE_DIR}')
-try:
-    from config.param_FCCee import gp_dir
-    print(gp_dir.rstrip('/'))
-except:
-    print('/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks')
-")
-else
-    # Fallback to the default Perlmutter gridpack directory
-    GP_DIR="/global/cfs/cdirs/atlas/oarakji/myFiles/gridpacks"
-    echo "Warning: No config file found, using default Perlmutter gridpack directory"
-fi
+# Extract the MG5 card name without path and extension, then add .tar.gz
+MG5_CARD_NAME=$(basename "${SCRIPTFILE}" .mg5)
+GRIDPACK_NAME="${MG5_CARD_NAME}.tar.gz"
 
-OUTDIR="${GP_DIR}/${PROCESSNAME}"
-OUTFILE="${OUTDIR}/gridpack_${JOBID}.tar.gz"
-echo "Copying gridpack to ${OUTFILE}"
-mkdir -p "${OUTDIR}"
-# Use regular cp instead of xrdcp for local filesystem
-cp "${GRIDPACK_FILE}" "${OUTFILE}"
+OUTFILE="${GP_DIR}/${GRIDPACK_NAME}"
+echo "Moving gridpack to ${OUTFILE}"
+mkdir -p "${GP_DIR}"
+
+# Move the gridpack to the final location with the proper name
+mv "${GRIDPACK_FILE}" "${OUTFILE}"
+
+echo "Gridpack successfully saved as: ${OUTFILE}"
 
 # ----------- 12. Cleanup -----------
 cd /
