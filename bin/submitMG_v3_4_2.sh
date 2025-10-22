@@ -76,7 +76,11 @@ else
 fi
 
 # ----------- 8. Run MadGraph (using your install) -----------
+<<<<<<< HEAD
 MG5BASE="/global/homes/o/oarakji/MG5_aMC_v3_4_2"
+=======
+MG5BASE="/home/oarakji/tth_50TeV_studies/MG5_aMC_v3_4_2"
+>>>>>>> origin/perlmutter-version
 MG5EXE="${MG5BASE}/bin/mg5_aMC"
 
 # Create a single MG5 script that includes both process generation and gridpack creation

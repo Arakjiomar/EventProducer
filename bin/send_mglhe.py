@@ -11,6 +11,7 @@ import EventProducer.common.makeyaml as my
 class send_mglhe():
 
 #__________________________________________________________
+<<<<<<< HEAD
     def __init__(self, islsf, isslurm, mg5card, cutfile, model, para, procname, njobs, nev, queue, priority, ncpus, do_EL7, useV3=False, useV342=False, account='', time='02:00:00', nodes='1', ntasks='1', mem='4GB', islocal=False):
         self.islsf     = islsf
         self.isslurm   = isslurm
@@ -20,6 +21,12 @@ class send_mglhe():
         self.nodes     = nodes
         self.ntasks    = ntasks
         self.mem       = mem
+=======
+    def __init__(self, islsf, iscondor, isslurm, mg5card, cutfile, model, para, procname, njobs, nev, queue, priority, ncpus, do_EL7, useV3=False, useV342=False, account='m3792', time='01:00:00'):
+        self.islsf     = islsf
+        self.iscondor  = iscondor
+        self.isslurm   = isslurm
+>>>>>>> origin/perlmutter-version
         self.user      = os.environ['USER']
         self.mg5card   = mg5card
         self.cutfile   = cutfile
@@ -34,6 +41,8 @@ class send_mglhe():
         self.do_EL7    = do_EL7
         self.useV3     = useV3
         self.useV342   = useV342
+        self.account   = account
+        self.time      = time
 
 #__________________________________________________________
     def send(self):
@@ -68,6 +77,7 @@ class send_mglhe():
            os.makedirs(jobsdir+'/std/')
            os.makedirs(jobsdir+'/cfg/')
 
+<<<<<<< HEAD
         if self.islsf==False and self.isslurm==False and self.islocal==False:
             print ("Submit issue : LSF, SLURM, nor LOCAL flag defined !!!")
             sys.exit(3)
@@ -104,6 +114,20 @@ class send_mglhe():
                 if not myyaml: 
                     print ('job %s already exists'%uid)
                     continue
+=======
+        if self.islsf==False and self.iscondor==False and self.isslurm==False:
+            print ("Submit issue : LSF, CONDOR, nor SLURM flag defined !!!")
+            sys.exit(3)
+
+        condor_file_params_str=[]
+        slurm_file_params_str=[]
+        while nbjobsSub<self.njobs:
+            uid = ut.getuid2()
+            myyaml = my.makeyaml(yamldir, uid)
+            if not myyaml: 
+                print ('job %s already exists'%uid)
+                continue
+>>>>>>> origin/perlmutter-version
 
                 if ut.file_exist('%s/%s/events_%s.lhe.gz'%(outdir,self.procname,uid)):
                     print ('already exist, continue')
@@ -114,6 +138,7 @@ class send_mglhe():
                 
                 basename =  self.procname+ '_'+seed
 
+<<<<<<< HEAD
                 cwd = os.getcwd()
                 script = cwd + '/bin/submitMG.sh '
                 if self.useV3:
@@ -123,9 +148,23 @@ class send_mglhe():
                 if self.islsf==True :
                   cmdBatch = 'bsub -o '+jobsdir+'/std/'+basename +'.out -e '+jobsdir+'/std/'+basename +'.err -q '+self.queue
                   cmdBatch +=' -J '+basename +' "'+script + self.mg5card+' '+self.procname+' '+outdir+' '+seed+' '+str(self.nev)+' '+cuts+' '+model+'"'
+=======
+            cwd = os.getcwd()
+            script = cwd + '/bin/submitMG.sh '
+            if self.useV3:
+                script = cwd + '/bin/submitMG_v3.sh '
+            if self.useV342:
+                script = cwd + '/bin/submitMG_v3_4_2.sh '
+            if self.isslurm:
+                script = cwd + '/bin/submitMG_slurm.sh '
+            if self.islsf==True :
+              cmdBatch = 'bsub -o '+jobsdir+'/std/'+basename +'.out -e '+jobsdir+'/std/'+basename +'.err -q '+self.queue
+              cmdBatch +=' -J '+basename +' "'+script + mg5card+' '+self.procname+' '+outdir+' '+seed+' '+str(self.nev)+' '+cuts+' '+model+'"'
+>>>>>>> origin/perlmutter-version
 
                   print (cmdBatch)
 
+<<<<<<< HEAD
                   batchid=-1
                   job,batchid=ut.SubmitToLsf(cmdBatch,10,1)
                   nbjobsSub+=job
@@ -134,6 +173,17 @@ class send_mglhe():
                   model = self.model if self.model else './null'
                   slurm_job_params.append((self.mg5card, self.procname, outdir, seed, str(self.nev), cuts, model, script, basename))
                   nbjobsSub+=1
+=======
+              batchid=-1
+              job,batchid=ut.SubmitToLsf(cmdBatch,10,1)
+              nbjobsSub+=job
+            elif self.iscondor==True :
+              condor_file_params_str.append(mg5card+' '+self.procname+' '+outdir+' '+seed+' '+str(self.nev)+' '+cuts+' '+model)
+              nbjobsSub+=1
+            elif self.isslurm==True :
+              slurm_file_params_str.append(mg5card+' '+self.procname+' '+outdir+' '+seed+' '+str(self.nev)+' '+cuts+' '+model)
+              nbjobsSub+=1
+>>>>>>> origin/perlmutter-version
 
         if self.isslurm==True :
             # Submit individual SLURM jobs
@@ -219,6 +269,61 @@ class send_mglhe():
                         nbjobsSub += 1
                     else:
                         print(f"Local job {basename} failed with return code {result.returncode}")
+
+        if self.isslurm==True :
+            # parameter file
+            fparamname_slurm = 'job_params_mglhe.txt'
+            fparamfull_slurm = '%s/%s'%(logdir,fparamname_slurm)
+            fparam_slurm = None
+            try:
+                fparam_slurm = open(fparamfull_slurm, 'w')
+            except IOError as e:
+                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+                time.sleep(10)
+                fparam_slurm = open(fparamfull_slurm, 'w')
+            for line in slurm_file_params_str:
+                fparam_slurm.write('%s\n'%line)
+            fparam_slurm.close()
+            
+            # slurm config
+            frunname_slurm = 'job_desc_mglhe.sh'
+            frunfull_slurm = '%s/%s'%(logdir,frunname_slurm)
+            frun_slurm = None
+            try:
+                frun_slurm = open(frunfull_slurm, 'w')
+            except IOError as e:
+                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+                time.sleep(10)
+                frun_slurm = open(frunfull_slurm, 'w')
+            subprocess.getstatusoutput('chmod 755 %s'%frunfull_slurm)
+            
+            # Write SLURM script
+            frun_slurm.write('#!/bin/bash\n')
+            frun_slurm.write('#SBATCH --account=%s\n'%self.account)
+            frun_slurm.write('#SBATCH --qos=%s\n'%self.queue)
+            frun_slurm.write('#SBATCH --time=%s\n'%self.time)
+            frun_slurm.write('#SBATCH --nodes=1\n')
+            frun_slurm.write('#SBATCH --ntasks-per-node=%s\n'%self.ncpus)
+            frun_slurm.write('#SBATCH --cpus-per-task=1\n')
+            frun_slurm.write('#SBATCH --constraint=cpu\n')
+            frun_slurm.write('#SBATCH --job-name=%s\n'%self.procname)
+            frun_slurm.write('#SBATCH --output=%s/slurm_job.%%j.out\n'%logdir)
+            frun_slurm.write('#SBATCH --error=%s/slurm_job.%%j.err\n'%logdir)
+            frun_slurm.write('#SBATCH --array=1-%d\n'%len(slurm_file_params_str))
+            frun_slurm.write('\n')
+            frun_slurm.write('# Get job parameters from parameter file\n')
+            frun_slurm.write('PARAMS=$(sed -n "${SLURM_ARRAY_TASK_ID}p" %s)\n'%fparamfull_slurm)
+            frun_slurm.write('\n')
+            frun_slurm.write('# Execute the script with parameters\n')
+            frun_slurm.write('%s $PARAMS\n'%script)
+            frun_slurm.close()
+            
+            # Submit array job
+            nbjobsSub=0
+            cmdBatch="sbatch %s"%frunfull_slurm
+            print (cmdBatch)
+            job, jobid = ut.SubmitToSlurm(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
+            nbjobsSub+=job
 
         print ('succesfully sent %i  job(s)'%nbjobsSub)
 
