@@ -8,19 +8,11 @@ import EventProducer.common.makeyaml as my
 class send_kkmc():
 
 #__________________________________________________________
-<<<<<<< HEAD
     def __init__(self,njobs,events, process, islsf, isslurm, islocal, queue, priority, ncpus, para, version, account='', time='02:00:00', nodes='1', ntasks='1', mem='4GB'):
-=======
-    def __init__(self,njobs,events, process, islsf, iscondor, isslurm, islocal, queue, priority, ncpus, para, version, account='m3792', time='01:00:00'):
->>>>>>> origin/perlmutter-version
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
-<<<<<<< HEAD
-=======
-        self.iscondor = iscondor
->>>>>>> origin/perlmutter-version
         self.isslurm  = isslurm
         self.islocal  = islocal
         self.queue    = queue
@@ -34,8 +26,6 @@ class send_kkmc():
         self.user     = os.environ['USER']
         self.para     = para
         self.version  = version
-        self.account  = account
-        self.time     = time
 
 #__________________________________________________________
     def send(self):

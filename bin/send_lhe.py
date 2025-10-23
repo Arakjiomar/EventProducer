@@ -8,19 +8,11 @@ import EventProducer.common.makeyaml as my
 class send_lhe():
 
 #__________________________________________________________
-<<<<<<< HEAD
     def __init__(self,njobs,events, process, islsf, isslurm, queue, priority, ncpus, para, typelhe, account='', time='02:00:00', nodes='1', ntasks='1', mem='4GB'):
-=======
-    def __init__(self,njobs,events, process, islsf, iscondor, isslurm, queue, priority, ncpus, para, typelhe, account='m3792', time='01:00:00'):
->>>>>>> origin/perlmutter-version
         self.njobs    = njobs
         self.events   = events
         self.process  = process
         self.islsf    = islsf
-<<<<<<< HEAD
-=======
-        self.iscondor = iscondor
->>>>>>> origin/perlmutter-version
         self.isslurm  = isslurm
         self.queue    = queue
         self.priority = priority
@@ -33,8 +25,6 @@ class send_lhe():
         self.user     = os.environ['USER']
         self.para     = para
         self.typelhe  = typelhe
-        self.account  = account
-        self.time     = time
 
 #__________________________________________________________
     def send(self):
@@ -70,20 +60,11 @@ class send_lhe():
             os.system("mkdir -p %s"%yamldir)
 
 
-<<<<<<< HEAD
         if self.islsf==False and self.isslurm==False:
             print ("Submit issue : LSF nor SLURM flag defined !!!")
             sys.exit(3)
 
         slurm_scripts_list=[]
-=======
-        if self.islsf==False and self.iscondor==False and self.isslurm==False:
-            print ("Submit issue : LSF, CONDOR, nor SLURM flag defined !!!")
-            sys.exit(3)
-
-        condor_file_str=''
-        slurm_file_str=''
->>>>>>> origin/perlmutter-version
         while nbjobsSub<self.njobs:
             if self.typelhe == 'gp_mg':
                 uid = ut.getuid2()
@@ -162,14 +143,10 @@ class send_lhe():
             elif self.isslurm==True :
               slurm_scripts_list.append(frunfull)
               nbjobsSub+=1
-            elif self.isslurm==True :
-              slurm_file_str+=frunfull+" "
-              nbjobsSub+=1
 
         if self.isslurm==True :
             # Submit individual SLURM jobs for each script
             nbjobsSub=0
-<<<<<<< HEAD
             for script_path in slurm_scripts_list:
                 # Create SLURM batch script that includes Perlmutter setup
                 slurm_script_name = script_path.replace('.sh', '_slurm.sh')
@@ -219,62 +196,6 @@ class send_lhe():
                 print (cmdBatch)
                 job=ut.SubmitToSlurm(cmdBatch,10,"%i/%i"%(nbjobsSub,len(slurm_scripts_list)))
                 nbjobsSub+=job
-=======
-            cmdBatch="condor_submit %s"%frunfull_condor
-            print (cmdBatch)
-            job=ut.SubmitToCondor(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
-            nbjobsSub+=job    
-
-        if self.isslurm==True :
-            # clean string
-            slurm_file_str=slurm_file_str.replace("//","/")
-            #
-            frunname_slurm = 'job_desc_lhe.sh'
-            frunfull_slurm = '%s/%s'%(logdir,frunname_slurm)
-            frun_slurm = None
-            try:
-                frun_slurm = open(frunfull_slurm, 'w')
-            except IOError as e:
-                print ("I/O error({0}): {1}".format(e.errno, e.strerror))
-                time.sleep(10)
-                frun_slurm = open(frunfull_slurm, 'w')
-            subprocess.getstatusoutput('chmod 755 %s'%frunfull_slurm)
-            
-            # Write SLURM script for array job
-            frun_slurm.write('#!/bin/bash\n')
-            frun_slurm.write('#SBATCH --account=%s\n'%self.account)
-            frun_slurm.write('#SBATCH --qos=%s\n'%self.queue)
-            frun_slurm.write('#SBATCH --time=%s\n'%self.time)
-            frun_slurm.write('#SBATCH --nodes=1\n')
-            frun_slurm.write('#SBATCH --ntasks-per-node=%s\n'%self.ncpus)
-            frun_slurm.write('#SBATCH --cpus-per-task=1\n')
-            frun_slurm.write('#SBATCH --constraint=cpu\n')
-            frun_slurm.write('#SBATCH --job-name=%s\n'%self.process)
-            frun_slurm.write('#SBATCH --output=%s/slurm_lhe.%%A_%%a.out\n'%logdir)
-            frun_slurm.write('#SBATCH --error=%s/slurm_lhe.%%A_%%a.err\n'%logdir)
-            
-            # Get list of scripts and create array
-            script_list = slurm_file_str.strip().split()
-            frun_slurm.write('#SBATCH --array=1-%d\n'%len(script_list))
-            frun_slurm.write('\n')
-            frun_slurm.write('# Array of script paths\n')
-            frun_slurm.write('SCRIPTS=(\n')
-            for script in script_list:
-                frun_slurm.write('    "%s"\n'%script)
-            frun_slurm.write(')\n')
-            frun_slurm.write('\n')
-            frun_slurm.write('# Execute the script for this array task\n')
-            frun_slurm.write('SCRIPT_PATH="${SCRIPTS[$((SLURM_ARRAY_TASK_ID-1))]}"\n')
-            frun_slurm.write('chmod +x "$SCRIPT_PATH"\n')
-            frun_slurm.write('"$SCRIPT_PATH"\n')
-            frun_slurm.close()
-            #
-            nbjobsSub=0
-            cmdBatch="sbatch %s"%frunfull_slurm
-            print (cmdBatch)
-            job, jobid = ut.SubmitToSlurm(cmdBatch,10,"%i/%i"%(nbjobsSub,self.njobs))
-            nbjobsSub+=job    
->>>>>>> origin/perlmutter-version
     
         print ('succesfully sent %i  job(s)'%nbjobsSub)
 

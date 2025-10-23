@@ -2,24 +2,15 @@
 module_name = 'config/param_FCChh.py'
 # eos tests
 eostest = '/global/cfs/cdirs/atlas/oarakji/myFiles/tests/testfile.lhe.gz'
-<<<<<<< HEAD
 eostest_size = 1312594  # Size of actual test file
-=======
-eostest_size = 1312594
->>>>>>> origin/perlmutter-version
 
 # stat
 lhe_stat = "/global/cfs/cdirs/atlas/oarakji/myFiles/stat/statlhe.html"
 delphes_stat = "/global/cfs/cdirs/atlas/oarakji/myFiles/stat/delphes_stat/statdelphesVERSION.html"
 
 # web
-<<<<<<< HEAD
 lhe_web = "/global/cfs/cdirs/atlas/oarakji/myFiles/www/data/FCChh/LHEevents.txt"
 delphes_web = "/global/cfs/cdirs/atlas/oarakji/myFiles/www/data/FCChh/Delphesevents_VERSION_DETECTOR.txt"
-=======
-lhe_web = "/global/cfs/cdirs/atlas/oarakji/myFiles/data/LHEevents.txt"
-delphes_web = "/global/cfs/cdirs/atlas/oarakji/myFiles/data/Delphesevents_VERSION_DETECTOR.txt"
->>>>>>> origin/perlmutter-version
 
 # yaml directory
 yamldir = '/global/cfs/cdirs/atlas/oarakji/myFiles/yaml/FCChh/'

@@ -111,20 +111,14 @@ def SubmitToLsf(cmd,nbtrials,nsub):
 
 #__________________________________________________________
 def SubmitToSlurm(cmd,nbtrials,nsub):
-<<<<<<< HEAD
     """Submit jobs to SLURM using sbatch command"""
     submissionStatus=0
     cmd=cmd.replace('//','/') # clean up double slashes
-=======
-    submissionStatus=0
-    cmd=cmd.replace('//','/') # -> dav : is it needed?
->>>>>>> origin/perlmutter-version
     for i in range(nbtrials):            
         outputCMD = getCommandOutput(cmd)
         stderr=outputCMD["stderr"].split('\n')
         stdout=outputCMD["stdout"].split('\n')
 
-<<<<<<< HEAD
         # SLURM sbatch returns job ID on stdout and errors on stderr
         if len(stderr)==1 and stderr[0]=='' and len(stdout) > 0:
             # Check if stdout contains "Submitted batch job"
@@ -147,31 +141,6 @@ def SubmitToSlurm(cmd,nbtrials,nsub):
         if i==nbtrials-1:
             print ("failed submitting to SLURM after: "+str(nbtrials)+" trials, will exit")
             return 0
-=======
-        if len(stderr)==1 and stderr[0]=='' :
-            print ("------------GOOD SUB ",nsub)
-            submissionStatus=1
-        else:
-            print ("++++++++++++ERROR submitting, will retry")
-            print ("Trial : "+str(i)+" / "+str(nbtrials))
-            print ("stderr : ",len(stderr))
-            print (stderr)
-            time.sleep(10)
-
-            
-        if submissionStatus==1:
-            # Extract job ID from stdout (sbatch returns "Submitted batch job JOBID")
-            jobid = "unknown"
-            for line in stdout:
-                if "Submitted batch job" in line:
-                    jobid = line.split()[-1]
-                    break
-            return 1, jobid
-        
-        if i==nbtrials-1:
-            print ("failed sumbmitting after: "+str(nbtrials)+" trials, will exit")
-            return 0, 0
->>>>>>> origin/perlmutter-version
 
 #__________________________________________________________
 def file_exist(myfile):

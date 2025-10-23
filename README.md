@@ -187,16 +187,7 @@ source /global/homes/o/oarakji/setup_mg5_env.sh
 # source ./init.sh
 ```
 
-<<<<<<< HEAD
 The environment setup script handles all necessary configuration for MG5, LHAPDF, and EventProducer.
-=======
-Then initialise:
-```
-source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh
-setupATLAS -c el9+batch
-source ./init.sh
-```
->>>>>>> origin/perlmutter-version
 
 
 Generate LHE files from gridpacks

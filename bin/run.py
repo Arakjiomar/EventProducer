@@ -1,16 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-import os
 import argparse
-
-# Add the EventProducer directory to the Python path so EventProducer module can be found
-# This mimics the PYTHONPATH setup from init.sh: export PYTHONPATH=$PWD:$PYTHONPATH
-script_dir = os.path.dirname(os.path.abspath(__file__))
-eventproducer_dir = os.path.dirname(script_dir)
-
-if eventproducer_dir not in sys.path:
-    sys.path.insert(0, eventproducer_dir)
 
 # _____________________________________________________________________________
 def main():
@@ -43,7 +34,6 @@ def main():
     sendjobGroup.add_argument('--typelhe', type=str, required = '--send' in sys.argv and '--LHE'  in sys.argv , help='type of jobs to send', choices = ['gp_mg','gp_pw','mg','kkmc'])
     sendjobGroup.add_argument('--typestdhep', type=str, required = '--send' in sys.argv and '--STDHEP'  in sys.argv , help='type of jobs to send', choices = ['wzp6'])
 
-<<<<<<< HEAD
     sendjobGroup.add_argument('-q', '--queue', type=str, default='regular', help='SLURM partition (default: regular for Perlmutter)', choices=['debug','regular','shared','gpu','premium','interactive','express'])
     sendjobGroup.add_argument('--priority', type=str, default='normal', help='SLURM job priority (default: normal)')
     sendjobGroup.add_argument('--account', type=str, default='', help='SLURM account name (required for Perlmutter)')
@@ -65,35 +55,6 @@ def main():
     # higher priority -> premium
     # interactive jobs -> interactive
     # very high priority -> express
-=======
-    sendjobGroup.add_argument('-q', '--queue', type=str, default='regular', help='batch queue (default: regular for SLURM, workday for HTCONDOR)', choices=['debug','regular','premium','shared','gpu','large','1nh','8nh','1nd','2nd','1nw','espresso','microcentury','longlunch','workday','tomorrow','testmatch','nextweek'])
-    sendjobGroup.add_argument('--priority', type=str, default='normal', help='job priority (default: normal for SLURM, group_u_FCC.local_gen for condor)')
-    sendjobGroup.add_argument('--ncpus', type=str, default='1', help='number of CPUs (1CPU=2Gb of RAM)')
-    sendjobGroup.add_argument('--account', type=str, default='m3792', help='SLURM account (default: m3792)')
-    sendjobGroup.add_argument('--time', type=str, default='01:00:00', help='SLURM time limit (default: 01:00:00)')
-
-#41873
-
-    ###################
-    # slurm queues :  #
-    ###################
-    # debug -> 30 mins, 64 nodes
-    # regular -> 12 hours, 3072 nodes  
-    # premium -> 12 hours, priority access
-    # shared -> 12 hours, shared nodes
-    # gpu -> 12 hours, GPU nodes
-    # large -> 12 hours, >512 nodes
-    ###################
-    # condor queues : #
-    ###################
-    # 20 mins -> espresso
-    # 1h -> microcentury
-    # 2h -> longlunch
-    # 8h -> workday
-    # 1d -> tomorrow
-    # 3d -> testmatch
-    # 1w -> nextweek
->>>>>>> origin/perlmutter-version
     sendjobGroup.add_argument('-n','--numEvents', type=int, help='Number of simulation events per job', default=10000)
     sendjobGroup.add_argument('-N','--numJobs', type=int, default = 10, help='Number of jobs to submit')
 
@@ -118,12 +79,7 @@ def main():
 
     batchGroup = parser.add_mutually_exclusive_group(required = '--send' in sys.argv) # Where to submit jobs
     batchGroup.add_argument("--lsf", action='store_true', help="Submit with LSF")
-<<<<<<< HEAD
     batchGroup.add_argument("--slurm", action='store_true', help="Submit with SLURM (for Perlmutter)")
-=======
-    batchGroup.add_argument("--condor", action='store_true', help="Submit with condor")
-    batchGroup.add_argument("--slurm", action='store_true', help="Submit with SLURM")
->>>>>>> origin/perlmutter-version
     batchGroup.add_argument("--local", action='store_true', help="run locally (will not copy files on eos")
 
 
@@ -306,7 +262,6 @@ def main():
         if args.lsf:
             print('send to lsf')
             print('queue  ', args.queue)
-<<<<<<< HEAD
         elif args.slurm:
             print('send to SLURM')
             print('partition  ', args.queue)
@@ -316,19 +271,6 @@ def main():
             print('ntasks     ', args.ntasks)
             print('cpus-per-task ', getattr(args, 'cpus_per_task', '1'))
             print('memory     ', args.mem)
-=======
-        elif args.condor:
-            print('send to condor')
-            print('queue  ', args.queue)
-            print('priority  ', args.priority)
-            print('ncpus     ', args.ncpus)
-        elif args.slurm:
-            print('send to slurm')
-            print('queue  ', args.queue)
-            print('account   ', args.account)
-            print('time      ', args.time)
-            print('ncpus     ', args.ncpus)
->>>>>>> origin/perlmutter-version
         elif args.local:
             print('run locally')
 
@@ -338,32 +280,20 @@ def main():
 
                 print ('preparing to send lhe jobs from madgraph/powheg gridpacks for process {}'.format(args.process))
                 import EventProducer.bin.send_lhe as slhe
-<<<<<<< HEAD
                 sendlhe=slhe.send_lhe(args.numJobs,args.numEvents, args.process, args.lsf, args.slurm, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), para, args.typelhe, args.account, args.time, args.nodes, args.ntasks, args.mem)
-=======
-                sendlhe=slhe.send_lhe(args.numJobs,args.numEvents, args.process, args.lsf, args.condor, args.slurm, args.queue, args.priority, args.ncpus, para, args.typelhe, args.account, args.time)
->>>>>>> origin/perlmutter-version
                 sendlhe.send()
 
             elif args.typelhe == 'mg':
 
                 print ('preparing to send lhe jobs from madgraph standalone for process {}'.format(args.process))
                 import EventProducer.bin.send_mglhe as mglhe
-<<<<<<< HEAD
                 sendlhe=mglhe.send_mglhe( args.lsf, args.slurm, args.mg5card, args.cutfile, args.model, para, args.process, args.numJobs, args.numEvents, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), args.centos7, args.useV3, args.useV342, args.account, args.time, args.nodes, args.ntasks, args.mem, args.local)
-=======
-                sendlhe=mglhe.send_mglhe( args.lsf, args.condor, args.slurm, args.mg5card, args.cutfile, args.model, para, args.process, args.numJobs, args.numEvents, args.queue, args.priority, args.ncpus, args.centos7, args.useV3, args.useV342, args.account, args.time)
->>>>>>> origin/perlmutter-version
                 sendlhe.send()
 
             elif args.typelhe == 'kkmc' :
                 print ('preparing to send lhe jobs from KKMC for process {}'.format(args.process))
                 import EventProducer.bin.send_kkmclhe as kkmclhe
-<<<<<<< HEAD
                 sendlhe=kkmclhe.send_kkmc( args.numJobs,args.numEvents, args.process, args.lsf, args.slurm, args.local, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), para, version, args.account, args.time, args.nodes, args.ntasks, args.mem )
-=======
-                sendlhe=kkmclhe.send_kkmc( args.numJobs,args.numEvents, args.process, args.lsf, args.condor, args.slurm, args.local, args.queue, args.priority, args.ncpus, para, version, args.account, args.time )
->>>>>>> origin/perlmutter-version
                 sendlhe.send()
 
         elif args.STDHEP:
@@ -371,11 +301,7 @@ def main():
             if args.typestdhep == 'wzp6':
                 print ('preparing to send Whizard jobs to produce stdhep files for process {}'.format(args.process))
                 import EventProducer.bin.send_stdhep as sstdhep
-<<<<<<< HEAD
                 sendstdhep = sstdhep.send_stdhep( args.numJobs,args.numEvents, args.process, args.lsf, args.slurm, args.local, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), para, version, args.typestdhep, training, args.account, args.time, args.nodes, args.ntasks, args.mem)
-=======
-                sendstdhep = sstdhep.send_stdhep( args.numJobs,args.numEvents, args.process, args.lsf, args.condor, args.slurm, args.local, args.queue, args.priority, args.ncpus, para, version, args.typestdhep, training, args.account, args.time)
->>>>>>> origin/perlmutter-version
                 sendstdhep.send()
 
 
@@ -383,29 +309,17 @@ def main():
             if sendOpt == 'lhep8':
                 print ('preparing to send FCCSW jobs from lhe')
                 import EventProducer.bin.send_lhep8 as slhep8
-<<<<<<< HEAD
                 sendlhep8=slhep8.send_lhep8(args.numJobs,args.numEvents, args.process, args.lsf, args.slurm, args.local, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), para, version, args.decay, args.pycard, detector, args.customEDM4HEPOutput, args.account, args.time, args.nodes, args.ntasks, args.mem)
-=======
-                sendlhep8=slhep8.send_lhep8(args.numJobs,args.numEvents, args.process, args.lsf, args.condor, args.slurm, args.local, args.queue, args.priority, args.ncpus, para, version, args.decay, args.pycard, detector, args.customEDM4HEPOutput, args.account, args.time)
->>>>>>> origin/perlmutter-version
                 sendlhep8.send(args.force)
             elif sendOpt == 'p8':
                 print ('preparing to send FCCSW jobs from pythia8 directly')
                 import EventProducer.bin.send_p8 as sp8
-<<<<<<< HEAD
                 sendp8=sp8.send_p8(args.numJobs,args.numEvents, args.process, args.lsf, args.slurm, args.local, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), para, version, training, detector, args.customEDM4HEPOutput, args.account, args.time, args.nodes, args.ntasks, args.mem)
-=======
-                sendp8=sp8.send_p8(args.numJobs,args.numEvents, args.process, args.lsf, args.condor, args.slurm, args.local, args.queue, args.priority, args.ncpus, para, version, training, detector, args.customEDM4HEPOutput, args.account, args.time)
->>>>>>> origin/perlmutter-version
                 sendp8.send()
             elif sendOpt == 'stdhep':
                 print('preparing to send FCCSW jobs from stdhep')
                 import EventProducer.bin.send_fromstdhep as sstdhep
-<<<<<<< HEAD
                 sendstdhep = sstdhep.send_fromstdhep(args.numJobs,args.numEvents, args.process, args.lsf, args.slurm, args.local, args.queue, args.priority, getattr(args, 'cpus_per_task', '1'), para, version, detector, args.decay, args.account, args.time, args.nodes, args.ntasks, args.mem)
-=======
-                sendstdhep = sstdhep.send_fromstdhep(args.numJobs,args.numEvents, args.process, args.lsf, args.condor, args.slurm, args.local, args.queue, args.priority, args.ncpus, para, version, detector, args.decay, args.account, args.time)
->>>>>>> origin/perlmutter-version
                 sendstdhep.send(args.force)
 
     elif args.web:
