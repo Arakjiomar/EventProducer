@@ -98,9 +98,11 @@ class send_lhe():
             # frun.write('unset PYTHONPATH\n')
             frun.write('mkdir job%s_%s\n'%(uid,self.process))
             frun.write('cd job%s_%s\n'%(uid,self.process))
-            frun.write('mkdir -p %s\n'%(lhedir))
-            frun.write('mkdir -p %s%s\n'%(lhedir,self.process))
-            frun.write('python /global/cfs/cdirs/atlas/oarakji/myFiles/utils/eoscopy.py %s/%s.tar.gz .\n'%(gpdir,self.process))
+            frun.write('export EOS_MGM_URL=\"root://eospublic.cern.ch\"\n')
+            frun.write('source %s\n'%(self.para.defaultstack))
+            frun.write('mkdir %s\n'%(lhedir))
+            frun.write('mkdir %s%s\n'%(lhedir,self.process))
+            frun.write('python /afs/cern.ch/work/f/fccsw/public/FCCutils/eoscopy.py %s/%s.tar.gz .\n'%(gpdir,self.process))
             frun.write('tar -zxf %s.tar.gz\n'%self.process)
             
             #different dir structure in powheg gridpacks, compared to mg -> ONLY IN THE NEW ONES!
@@ -118,12 +120,12 @@ class send_lhe():
             #     frun.write('xrdcp -N -v events.lhe.gz root://eospublic.cern.ch/%s/%s/events_%s.lhe.gz\n'%(lhedir,self.process ,uid))
             
             #TEMP
-            frun.write('cd bin/internal/Gridpack/\n')
+            #frun.write('cd process/\n')
             frun.write('export LHAPDF_DATA_PATH=/global/cfs/cdirs/atlas/oarakji/myFiles/lhapdfsets/\n')
             frun.write('./run.sh %i %i\n'%(self.events,int(uid.lstrip('0'))))
             frun.write('echo "finished run"\n')
             #frun.write('python /afs/cern.ch/work/f/fccsw/public/FCCutils/eoscopy.py events.lhe.gz %s/%s/events_%s.lhe.gz\n'%(lhedir,self.process ,uid))
-            frun.write('cp events.lhe.gz %s/%s/events_%s.lhe.gz\n'%(lhedir,self.process ,uid))
+            frun.write('cp events.lhe.gz /%s/%s/events_%s.lhe.gz\n'%(lhedir,self.process ,uid))
             
             frun.write('echo "lhe file successfully copied on eos"\n')
 
@@ -160,7 +162,6 @@ class send_lhe():
                 fslurm.write('#!/bin/bash\n')
                 fslurm.write('#SBATCH --job-name=lhe_%s\n' % self.process)
                 fslurm.write('#SBATCH --partition=%s\n' % self.queue)
-                fslurm.write('#SBATCH -C cpu\n')  # Required constraint for NERSC CPU nodes
                 if self.account:
                     fslurm.write('#SBATCH --account=%s\n' % self.account)
                 fslurm.write('#SBATCH --time=%s\n' % self.time)
@@ -173,9 +174,14 @@ class send_lhe():
                 fslurm.write('\n')
                 
                 # Add Perlmutter environment setup
-                fslurm.write('# Environment setup for gridpack processing\n')
-                fslurm.write('source /global/homes/o/oarakji/setup_complete_env.sh\n')
-                fslurm.write('cd /global/homes/o/oarakji/tth_50TeV_studies/EventProducer\n')
+                fslurm.write('# Perlmutter environment and authentication setup\n')
+                fslurm.write('source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh\n')
+                fslurm.write('setupATLAS -c el9+batch\n')
+                fslurm.write('voms-proxy-init -voms atlas\n')
+                fslurm.write('source ./init.sh\n')
+                fslurm.write('\n')
+                fslurm.write('# Check VOMS proxy was created\n')
+                fslurm.write('voms-proxy-info --exists || exit 1\n')
                 fslurm.write('\n')
                 
                 # Execute the original script
